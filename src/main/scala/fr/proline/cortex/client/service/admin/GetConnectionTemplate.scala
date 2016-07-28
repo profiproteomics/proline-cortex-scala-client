@@ -1,0 +1,49 @@
+package fr.proline.cortex.client.service.admin
+
+import fr.profi.util.serialization.ProfiJson
+import fr.proline.cortex.api.service.admin.IGetConnectionTemplateService
+import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.repository.AbstractDatabaseConnector
+
+import rx.lang.scala.Observable
+
+object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
+  
+  private val requiredKeys = Array(
+    AbstractDatabaseConnector.PERSISTENCE_JDBC_DRIVER_KEY,
+    AbstractDatabaseConnector.PERSISTENCE_JDBC_URL_KEY,
+    AbstractDatabaseConnector.PERSISTENCE_JDBC_USER_KEY
+  )
+  
+  def apply(): Observable[Map[String, Object]] = {
+    this.runService()
+  }
+  
+  protected def convertResponseResult(responseResult: AnyRef): Map[String, Object] = {
+
+    require(
+      responseResult != null && classOf[java.util.Map[String, Object]].isInstance(responseResult),
+      mkServiceErrorMsg("invalid result, dabasase Parameters not returned !")
+    )
+    
+    responseResult match {
+      case javaMap: java.util.Map[_, _] => {
+        require( javaMap.isEmpty() == false, mkServiceErrorMsg("the returned Map is empty !") )
+        
+        val scalaMap = ProfiJson.getObjectMapper.convertValue(javaMap,classOf[Map[String, Object]])
+        
+        for (requiredKey <- requiredKeys) {
+          val valueOpt = scalaMap.get(requiredKey)
+          assert(
+            valueOpt.isDefined && valueOpt.get != null, mkServiceErrorMsg(s"key '$requiredKey' is missing in returned Map !")
+          )
+        }
+        
+        scalaMap
+      }
+      case _ => throw new Exception( mkServiceErrorMsg("invalid result, dabasase Parameters not returned !") )
+    }
+    
+  }
+    
+}
