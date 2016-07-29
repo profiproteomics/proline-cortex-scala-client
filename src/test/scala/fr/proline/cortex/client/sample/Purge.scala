@@ -26,8 +26,10 @@ import com.typesafe.scalalogging.StrictLogging
 
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.proline.cortex.api.CortexConstants._
+import fr.proline.cortex.api.JMSConnectionConfig
 import fr.proline.cortex.client._
 import fr.proline.jms.util.JMSConstants._
+import fr.proline.jms.util.JMSUtils
 
 /* Purge old messages from Proline JMS Queue */
 object Purge extends StrictLogging {

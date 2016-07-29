@@ -1,15 +1,17 @@
 package fr.proline.cortex.client.sample
 
-import java.util.HashMap
 import javax.jms.Connection
 import javax.jms.Session
+
 import com.typesafe.scalalogging.StrictLogging
+
 import org.hornetq.api.core.TransportConfiguration
 import org.hornetq.api.jms.HornetQJMSClient
 import org.hornetq.api.jms.JMSFactoryType
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory
-import org.hornetq.core.remoting.impl.netty.TransportConstants
+
 import fr.proline.cortex.api.CortexConstants._
+import fr.proline.cortex.api.JMSConnectionConfig
 import fr.proline.cortex.client._
 import fr.proline.jms.util.JMSConstants._
 

@@ -1,4 +1,4 @@
-package fr.proline.cortex.client
+package fr.proline.cortex.api
 
 import org.hornetq.core.remoting.impl.netty.TransportConstants
 //import fr.proline.cortex.api.CortexConstants._

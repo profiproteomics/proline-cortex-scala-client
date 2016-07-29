@@ -4,8 +4,8 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.admin.IGetConnectionTemplateService
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.repository.AbstractDatabaseConnector
-
 import rx.lang.scala.Observable
+import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
   
@@ -15,7 +15,7 @@ object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[S
     AbstractDatabaseConnector.PERSISTENCE_JDBC_USER_KEY
   )
   
-  def apply(): Observable[Map[String, Object]] = {
+  def apply()(implicit callerCtx: RemoteServiceCallerContext): Observable[Map[String, Object]] = {
     this.runService()
   }
   

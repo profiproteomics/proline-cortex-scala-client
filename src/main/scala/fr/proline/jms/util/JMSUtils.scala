@@ -1,4 +1,4 @@
-package fr.proline.cortex.client
+package fr.proline.jms.util
 
 import java.io.IOException
 import java.text.SimpleDateFormat

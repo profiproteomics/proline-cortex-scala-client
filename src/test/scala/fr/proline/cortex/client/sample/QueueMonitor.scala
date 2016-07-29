@@ -18,8 +18,10 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants
 import com.typesafe.scalalogging.StrictLogging
 
 import fr.proline.cortex.api.CortexConstants._
+import fr.proline.cortex.api.JMSConnectionConfig
 import fr.proline.cortex.client._
 import fr.proline.jms.util.JMSConstants._
+import fr.proline.jms.util.JMSUtils
 
 /* QueueMonitor use QueueBrowser with new JMS 2.0 JMSContext
  * Shows all active massage staying in Proline JMS Queue */

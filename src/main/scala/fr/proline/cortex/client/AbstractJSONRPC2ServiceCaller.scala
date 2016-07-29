@@ -1,21 +1,21 @@
 package fr.proline.cortex.client
 
 import java.util.concurrent.atomic.AtomicLong
+
 import javax.jms.Message
 import javax.jms.TextMessage
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
 
+import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.util.JMSConstants
 
 import rx.lang.scala.Observable
 
-
-object JSONRPC2ServiceCaller {
+private[this] object AbstractJSONRPC2ServiceCaller {
   
   private val jsonRequestIdSequence = new AtomicLong(0)
-
   def newJsonRequestId(): Long = { jsonRequestIdSequence.incrementAndGet() }
   
 }
@@ -71,16 +71,18 @@ abstract class AbstractJSONRPC2ServiceCaller[T] extends AbstractRemoteServiceCal
    * @param methodName The name of the method to execute remotely.
    * @param namedParameters A Map of named parameters that will be sent in the request.
    */
-  def executeRemoteMethod(methodName: String, namedParams: Option[java.util.Map[String,AnyRef]] = None): Observable[T] = {
+  def executeRemoteMethod(
+    methodName: String,
+    namedParams: Option[java.util.Map[String,AnyRef]] = None
+  )(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
-    val jsonRpcRequest = new JSONRPC2Request(methodName, JSONRPC2ServiceCaller.newJsonRequestId())
+    val jsonRpcRequest = new JSONRPC2Request(methodName, AbstractJSONRPC2ServiceCaller.newJsonRequestId())
     
     if (namedParams.isDefined) {
       jsonRpcRequest.setNamedParams(namedParams.get)
     }
     
-    val textMessage = RemoteServiceCaller.messageChannel.jmsSession.createTextMessage(jsonRpcRequest.toJSONString())
-    
+    val textMessage = callerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString())
     textMessage.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
     
     this.callRemoteService(textMessage).map { result: AnyRef =>

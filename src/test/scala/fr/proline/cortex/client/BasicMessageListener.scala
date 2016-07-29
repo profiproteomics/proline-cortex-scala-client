@@ -12,16 +12,17 @@ import scala.collection.JavaConverters._
 import com.thetransactioncompany.jsonrpc2._
 import com.typesafe.scalalogging.StrictLogging
 
+import fr.proline.jms.util.JMSUtils
+
 object BasicMessageListener extends MessageListener with StrictLogging {
   
   /* Count received messages */
   val MESSAGE_COUNT_SEQUENCE = new AtomicInteger(0)
 
-  import BasicMessageListener._
-  import JMSUtils._
+
 
   def onMessage(jmsMessage: Message) {
-    logger.info("Receiving message #" + MESSAGE_COUNT_SEQUENCE.incrementAndGet() + ": " + formatJmsMessage(jmsMessage))
+    logger.info("Receiving message #" + MESSAGE_COUNT_SEQUENCE.incrementAndGet() + ": " + JMSUtils.formatJmsMessage(jmsMessage))
 
     jmsMessage match {
       case tm: TextMessage => {

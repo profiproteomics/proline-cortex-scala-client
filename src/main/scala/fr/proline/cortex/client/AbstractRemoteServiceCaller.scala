@@ -1,21 +1,22 @@
 package fr.proline.cortex.client
 
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+
 import javax.jms._
-import scala.concurrent.ExecutionContext
+
 import com.thetransactioncompany.jsonrpc2._
 import com.typesafe.scalalogging.StrictLogging
+
 import fr.proline.cortex.api._
 import fr.proline.cortex.api.CortexConstants._
+import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.service.api.IRemoteServiceIdentity
+import fr.proline.jms.util.JMSUtils
+
 import rx.lang.scala.Observable
-import rx.lang.scala.schedulers.ExecutionContextScheduler
-import org.hornetq.api.jms.HornetQJMSClient
-import rx.schedulers.Schedulers
 
 // TODO: create an implicit RemoteServiceExecutionContext ???
-object RemoteServiceCaller extends StrictLogging {
+/*object RemoteServiceCaller extends StrictLogging {
   
   // Create a single thread executor that will be used for JMS messages processing
   private val singleThreadExecutor = Executors.newSingleThreadExecutor
@@ -105,15 +106,7 @@ object RemoteServiceCaller extends StrictLogging {
   
 }
 
-case class RemoteServiceMessageChannel(
-  jmsSession: Session,
-  serviceQueue: Queue
-) {
-  // Create a JMS Message Producer (Producer MUST be confined in current Thread)
-  val messageProducer = jmsSession.createProducer(serviceQueue)
-  val replyQueue = jmsSession.createTemporaryQueue()
-}
-
+*/
 
 /**
  * Abstract class defining minimal behavior for all remote service callers.
@@ -145,13 +138,13 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
    * If the JMS response is null then an Exception is thrown.
    * Else the JMS response is parsed using the ''parseRemoteServiceResponse'' method.
    */
-  protected def callRemoteService(jmsRequest: Message): Observable[T] = {
+  protected def callRemoteService(jmsRequest: Message)(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
     val startingTime = System.currentTimeMillis()
     
     logger.info(s"RemoteServiceCaller will send a JMS request for service '$serviceName'...")
     
-    RemoteServiceCaller.callRemoteService(jmsRequest).map { jmsResponse =>
+    this._sendJmsRequest(jmsRequest).map { jmsResponse =>
       
       val endingTime = System.currentTimeMillis()
       val requestDuration = (endingTime - startingTime) / 60
@@ -176,6 +169,35 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       }
     }
     
+  }
+  
+  private def _sendJmsRequest(jmsRequest: Message)(implicit callerCtx: RemoteServiceCallerContext): Observable[Message] = {
+    
+    val observer = Observable[Message] { suscriber =>
+      
+      logger.debug("New MessageListener from thread: " + Thread.currentThread().getName() )
+      
+      val messageListener = new Object with MessageListener {
+        override def onMessage(jmsResponse: Message) {
+          suscriber.onNext(jmsResponse)
+          suscriber.onCompleted()
+        }
+      }
+      
+      // Create new MessageConsumer that will be used to listen for the remote service response
+      val responseConsumer = callerCtx.jmsContext.createConsumer(callerCtx.temporaryReplyQueue)
+      responseConsumer.setMessageListener(messageListener)
+      
+      // Tell the remote service to reply to a particular queue: a TemporaryQueue used to store Server->Client responses
+      jmsRequest.setJMSReplyTo(callerCtx.temporaryReplyQueue)
+  
+      // Send the Message to the remote service
+      callerCtx.jmsProducer.send(callerCtx.jmsQueue, jmsRequest)
+      
+      logger.debug(s"JMS Message ${jmsRequest.getJMSMessageID()} has been sent by the RemoteServiceCaller.")
+    }
+    
+    observer.subscribeOn(callerCtx.execCtxScheduler)
   }
   
   /**

@@ -17,8 +17,10 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
 import com.typesafe.scalalogging.StrictLogging
 
 import fr.proline.cortex.api.CortexConstants._
+import fr.proline.cortex.api.JMSConnectionConfig
 import fr.proline.cortex.client._
 import fr.proline.jms.util.JMSConstants._
+import fr.proline.jms.util.JMSUtils
 
 /* Sample Consumer Clientc code to retrieve a large resource via HornetQ JMS streams 
  * WARN PROLINE_NODE_ID and FILE_PATH must be fixed */
