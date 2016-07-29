@@ -3,9 +3,10 @@ package fr.proline.cortex.client.service.admin
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.admin.IGetConnectionTemplateService
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.repository.AbstractDatabaseConnector
-import rx.lang.scala.Observable
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.repository.AbstractDatabaseConnector
+
+import rx.lang.scala.Observable
 
 object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
   

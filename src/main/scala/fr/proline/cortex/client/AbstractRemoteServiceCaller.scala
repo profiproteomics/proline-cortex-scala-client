@@ -207,6 +207,10 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
   protected def mkServiceErrorMsg(errorMsg: String): String = {
     serviceName + " service error: " + errorMsg
   }
+  
+  protected def newServiceException(errorMsg: String): Exception = {
+    new Exception(this.mkServiceErrorMsg(errorMsg) )
+  }
 
 
 }

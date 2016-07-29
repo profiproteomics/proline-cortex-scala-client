@@ -44,7 +44,7 @@ object BuildJMSContext extends StrictLogging {
       }
     }
     
-    // Automatically start the underlying question as soon as a message consumer is created
+    // Automatically start the underlying connection as soon as a message consumer is created
     jmsContext.setAutoStart(true)
     
     jmsContext

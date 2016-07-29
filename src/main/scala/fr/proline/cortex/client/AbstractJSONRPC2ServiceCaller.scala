@@ -36,14 +36,26 @@ abstract class AbstractJSONRPC2ServiceCaller[T] extends AbstractRemoteServiceCal
    */
   protected def parseRemoteServiceResponse(jmsMessage: Message): AnyRef = {
     
+    val jmsMessageID = jmsMessage.getJMSMessageID
+    
     var responseLength = 0
     val jsonResponse = jmsMessage match {
+      
       case textMessage: TextMessage => {
         val responseText = textMessage.getText()
         responseLength = responseText.length
+        
+        if (responseLength == 0) {
+          throw newServiceException(
+            s"invalid JMS Message ($jmsMessageID), the string must not be empty to be parsed a JSON-RPC response !"
+          )
+        }
+        
         JSONRPC2Response.parse(responseText)
       }
-      case _ => throw new Exception("Invalid JMS Message, it must be a TextMessage to be converted to a JSONRPC2Message")
+      case _ => throw newServiceException(
+        "invalid JMS Message($jmsMessageID), it must be a TextMessage to be converted to a JSONRPC2Response !"
+      )
     }
     
     logger.debug(s"JSON response ID from service '$serviceName' = " + jsonResponse.getID())
