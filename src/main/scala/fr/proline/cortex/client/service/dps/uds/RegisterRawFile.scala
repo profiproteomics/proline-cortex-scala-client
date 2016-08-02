@@ -1,0 +1,36 @@
+package fr.proline.cortex.client.service.dps.uds
+
+import scala.collection.mutable.HashMap
+
+import fr.profi.util.primitives.toLong
+import fr.proline.cortex.api.service.dps.uds._
+import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.context.RemoteServiceCallerContext
+
+import rx.lang.scala.Observable
+
+object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with IRegisterRawFileService {
+  
+  import this.PROCESS_METHOD._
+  
+  def apply(
+    rawFileIdentifier: String,
+    rawFilePath: Option[String],
+    mzdbFilePath: Option[String],
+    instrumentId: java.lang.Long,
+    ownerId: java.lang.Long
+  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+    
+    val namedParams = new java.util.HashMap[String,AnyRef]()
+    namedParams.put(RAW_FILE_IDENTIFIER_PARAM, rawFileIdentifier)
+    if (rawFilePath.isDefined) namedParams.put(RAW_FILE_PATH_PARAM, rawFilePath.get)
+    if (mzdbFilePath.isDefined) namedParams.put(MZDB_FILE_PATH_PARAM, mzdbFilePath.get)
+    namedParams.put(INSTRUMENT_ID_PARAM, instrumentId)
+    namedParams.put(OWNER_ID_PARAM, instrumentId)
+    
+    this.runService( Some(namedParams) )
+  }
+  
+  protected def convertResponseResult(responseResult: AnyRef): Long = toLong(responseResult)
+  
+}

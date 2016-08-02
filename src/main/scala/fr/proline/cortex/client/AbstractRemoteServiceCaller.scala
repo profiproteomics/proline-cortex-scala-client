@@ -4,6 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import javax.jms._
 
+import scala.concurrent.Future
+
 import com.thetransactioncompany.jsonrpc2._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -14,99 +16,7 @@ import fr.proline.jms.service.api.IRemoteServiceIdentity
 import fr.proline.jms.util.JMSUtils
 
 import rx.lang.scala.Observable
-
-// TODO: create an implicit RemoteServiceExecutionContext ???
-/*object RemoteServiceCaller extends StrictLogging {
-  
-  // Create a single thread executor that will be used for JMS messages processing
-  private val singleThreadExecutor = Executors.newSingleThreadExecutor
-  private val execCtx = ExecutionContext.fromExecutor(singleThreadExecutor)
-  private val execCtxScheduler = ExecutionContextScheduler(execCtx)
-  
-  private val jsmConnManager = JMSConnectionManager.getInstance()
-  require( jsmConnManager.isConnected(), "JMSConnectionManager is not connected !")
-  
-  // Get JMS Connection
-  val jmsConnection = jsmConnManager.getJMSConnection().get
-  
-  // Instantiate the Proline remote service JMS Queue
-  val remoteServiceJMSQueue: Queue = {
-    
-    // TODO: add to JMSConnectionConfig ???
-    val queueName = DEFAULT_PROLINE_SERVICE_REQUEST_QUEUE_NAME    
-    logger.info(s"Using JMS Queue '$queueName'")
-    
-    HornetQJMSClient.createQueue(queueName)
-  }
-  
-  // Create the remote service JMS session (NOT transacted, CLIENT_ACKNOWLEDGE)
-  val remoteServiceJMSSession = jmsConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
-  
-  val messageChannel = RemoteServiceMessageChannel( remoteServiceJMSSession, remoteServiceJMSQueue )
-  
-  def start() {
-    // Explicitly start the JMS connection to begin consumer listening 
-    jmsConnection.start()
-  }
-  
-  def stop() {
-    messageChannel.jmsSession.close()
-    singleThreadExecutor.shutdown()
-  }
-  
-  // To enable concurrent processing of messages, a ConnectionConsumer must be created
-  // - https://www.novell.com/documentation/extend5/Docs/help/MP/jms/tutorial/connConsumer-1.htm
-  // - http://www.precisejava.com/javaperf/j2ee/JMS.htm
-  /*val connectionConsumer = jsmConnManager.getJMSConnection().get.createConnectionConsumer(
-    jsmConnManager.getRemoteServiceJMSQueue().get, // destination
-    "",   // messageSelector
-    null, // sessionPool
-    1000  // maxMessages
-  )*/
-  
-  def callRemoteService(jmsRequest: Message): Observable[Message] = {
-    
-    val observer = Observable[Message] { suscriber =>
-      
-      logger.debug("New MessageListener from thread: " + Thread.currentThread().getName() )
-      
-      val messageListener = new Object with MessageListener {
-        override def onMessage(jmsResponse: Message) {
-          suscriber.onNext(jmsResponse)
-          suscriber.onCompleted()
-        }
-      }
-      
-      // Create new MessageConsumer that will be used to listen for the remote service response
-      val responseConsumer = messageChannel.jmsSession.createConsumer(messageChannel.replyQueue)
-      responseConsumer.setMessageListener(messageListener)
-      
-      // Tell the remote service to reply to a particular queue: a TemporaryQueue used to store Server->Client responses
-      jmsRequest.setJMSReplyTo(messageChannel.replyQueue)
-  
-      // Send the Message to the remote service
-      messageChannel.messageProducer.send(jmsRequest)
-      
-      logger.debug(s"JMS Message ${jmsRequest.getJMSMessageID()} has been sent by the RemoteServiceCaller.")
-    }
-    
-    observer.subscribeOn(execCtxScheduler)
-  }
-  
-  /*def callRemoteServiceNow(jmsMessage: Message, responseTimeout: Int): Message = {
-    
-    val responseConsumer = messageChannel.jmsSession.createConsumer(messageChannel.replyQueue)
-    
-    // Send JMS Message
-    RemoteServiceCaller2._sendJmsMessage(jmsMessage)
-    
-    // Wait for the message if synchronous mode is enabled
-    responseConsumer.receive(responseTimeout)
-  }*/
-  
-}
-
-*/
+import rx.lang.scala.Subscriber
 
 /**
  * Abstract class defining minimal behavior for all remote service callers.
@@ -128,10 +38,12 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
   private val messagesCountSequence = new AtomicInteger(0)
   
   /**
-   * Abstract method used to parse the remote service response.
+   * Abstract method used to parse and emit the remote service response.
+   * Important: this method must call the onNext method of the provided Subscriber.
+   *
    * @param jmsMessage The JMS message to parse.
    */
-  protected def parseRemoteServiceResponse(jmsMessage: Message): T
+  protected def emitRemoteServiceResponse(jmsMessage: Message, suscriber: Subscriber[T]): Unit
   
   /**
    * Call the remote service by sending a JMS request (Message) and waiting for a JMS response (Message).
@@ -140,64 +52,74 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
    */
   protected def callRemoteService(jmsRequest: Message)(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
-    val startingTime = System.currentTimeMillis()
-    
-    logger.info(s"RemoteServiceCaller will send a JMS request for service '$serviceName'...")
-    
-    this._sendJmsRequest(jmsRequest).map { jmsResponse =>
+    val observer = Observable[T] { suscriber =>
       
-      val endingTime = System.currentTimeMillis()
-      val requestDuration = (endingTime - startingTime) / 60
-      logger.debug(s"Received JMS response of service '$serviceName' after $requestDuration seconds.")
+      val startingTime = System.currentTimeMillis()
       
-      val messageNumber = this.messagesCountSequence.incrementAndGet()
+      logger.info(s"RemoteServiceCaller will send a JMS request for service '$serviceName'")
       
-      if (jmsResponse != null) {
-        logger.debug(s"Received message #$messageNumber ${jmsResponse.getJMSMessageID} from service '$serviceName'")
-        logger.trace(s"Content of message ${jmsResponse.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsResponse) )
-    
-        // Tell to that the JMS message has been successfully consumed
-        jmsResponse.acknowledge()
-        
-        parseRemoteServiceResponse(jmsResponse)
-        
-      } else {
-        val errorMsg = s"Error while receiving message #$messageNumber from service '$serviceName' !"
-        logger.error(errorMsg)
-        
-        throw new Exception(errorMsg)
-      }
-    }
-    
-  }
-  
-  private def _sendJmsRequest(jmsRequest: Message)(implicit callerCtx: RemoteServiceCallerContext): Observable[Message] = {
-    
-    val observer = Observable[Message] { suscriber =>
-      
-      logger.debug("New MessageListener from thread: " + Thread.currentThread().getName() )
+      //val latch = new CountDownLatch(1)
       
       val messageListener = new Object with MessageListener {
         override def onMessage(jmsResponse: Message) {
-          suscriber.onNext(jmsResponse)
-          suscriber.onCompleted()
+          Future {
+            try {
+              val endingTime = System.currentTimeMillis()
+              val requestDuration = (endingTime - startingTime) / 60
+              logger.debug(s"Received JMS response from remote service '$serviceName' after $requestDuration seconds.")
+              
+              val messageNumber = messagesCountSequence.incrementAndGet()
+              
+              if (jmsResponse != null) {
+                logger.debug(s"Received message #$messageNumber ${jmsResponse.getJMSMessageID} from remote service '$serviceName'")
+                // TODO: put as trace
+                logger.debug(s"Content of message ${jmsResponse.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsResponse) )
+            
+                emitRemoteServiceResponse(jmsResponse, suscriber)
+                
+                // Tell to the remote server that the JMS message has been successfully consumed
+                jmsResponse.acknowledge()
+                
+              } else {
+                val errorMsg = s"Error while receiving message #$messageNumber from service '$serviceName' !"
+                logger.error(errorMsg)
+                
+                throw new Exception(errorMsg)
+              }
+            } catch {
+              case t: Throwable => {
+                logger.error("Error during the processing of the remote service response",t) //return Observable.error(t)
+                suscriber.onError(t)
+              }
+            }
+            
+            suscriber.onCompleted()
+            
+          } (callerCtx.execCtx)
         }
       }
       
       // Create new MessageConsumer that will be used to listen for the remote service response
+      // TODO: find a way to maintain the responseConsumer active
       val responseConsumer = callerCtx.jmsContext.createConsumer(callerCtx.temporaryReplyQueue)
       responseConsumer.setMessageListener(messageListener)
       
       // Tell the remote service to reply to a particular queue: a TemporaryQueue used to store Server->Client responses
       jmsRequest.setJMSReplyTo(callerCtx.temporaryReplyQueue)
   
-      // Send the Message to the remote service
+      // Send the Message to the remote service using a synchronous send
+      // For asynchronous send see: http://www.oracle.com/technetwork/articles/java/jms2messaging-1954190.html
+      //val latch = new CountDownLatch(1)
+      //val completionListener = new RemoteServiceMessageCompletionListener(latch)
       callerCtx.jmsProducer.send(callerCtx.jmsQueue, jmsRequest)
       
       logger.debug(s"JMS Message ${jmsRequest.getJMSMessageID()} has been sent by the RemoteServiceCaller.")
+      
+      // Wait until the reply has been received from the server
+      //latch.await()
     }
     
-    observer.subscribeOn(callerCtx.execCtxScheduler)
+    observer.subscribeOn(callerCtx.execCtxScheduler) //.observeOn(callerCtx.execCtxScheduler)
   }
   
   /**
@@ -214,3 +136,19 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
 
 
 }
+
+/*private[this] class RemoteServiceMessageCompletionListener(latch: CountDownLatch) extends CompletionListener {
+
+  var exception: Exception = null
+  def getException() = exception
+
+  override def onCompletion(message: Message) {
+    latch.countDown()
+  }
+
+  override def onException(message: Message, exception: Exception) {
+    latch.countDown()
+    this.exception = exception
+  }
+
+}*/

@@ -8,7 +8,7 @@ import fr.proline.repository.AbstractDatabaseConnector
 
 import rx.lang.scala.Observable
 
-object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
+object Database extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
   
   private val requiredKeys = Array(
     AbstractDatabaseConnector.PERSISTENCE_JDBC_DRIVER_KEY,
@@ -16,17 +16,12 @@ object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[S
     AbstractDatabaseConnector.PERSISTENCE_JDBC_USER_KEY
   )
   
-  def apply()(implicit callerCtx: RemoteServiceCallerContext): Observable[Map[String, Object]] = {
+  def getConnectionTemplate()(implicit callerCtx: RemoteServiceCallerContext): Observable[Map[String, Object]] = {
     this.runService()
   }
   
   protected def convertResponseResult(responseResult: AnyRef): Map[String, Object] = {
 
-    require(
-      responseResult != null && classOf[java.util.Map[String, Object]].isInstance(responseResult),
-      mkServiceErrorMsg("invalid result, dabasase Parameters not returned !")
-    )
-    
     responseResult match {
       case javaMap: java.util.Map[_, _] => {
         require( javaMap.isEmpty() == false, mkServiceErrorMsg("the returned Map is empty !") )
@@ -45,6 +40,16 @@ object GetConnectionTemplate extends AbstractRemoteProcessingServiceCaller[Map[S
       case _ => throw new Exception( mkServiceErrorMsg("invalid result, dabasase Parameters not returned !") )
     }
     
+  }
+  
+  // Expose the method defined in the UserAccount service
+  // TODO: define the same API server side or add login/passwordHash params to the getConnectionTemplate method
+  def getPassword(
+    login: String,
+    passwordHash: String,
+    publicKey: String
+  )(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
+    UserAccount.getDatabasePassword(login, passwordHash, publicKey)
   }
     
 }

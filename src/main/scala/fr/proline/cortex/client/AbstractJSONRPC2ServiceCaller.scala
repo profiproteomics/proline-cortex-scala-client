@@ -12,6 +12,7 @@ import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.util.JMSConstants
 
 import rx.lang.scala.Observable
+import rx.lang.scala.Subscriber
 
 private[this] object AbstractJSONRPC2ServiceCaller {
   
@@ -20,21 +21,15 @@ private[this] object AbstractJSONRPC2ServiceCaller {
   
 }
 
-abstract class AbstractJSONRPC2ServiceCaller[T] extends AbstractRemoteServiceCaller[AnyRef] {
+abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller[AnyRef] {
   
   protected val MAX_LOGGING_RESPONSE_LENGTH = 1000
   
   /**
-   * Abstract method used to convert the remote service response result.
-   * @param responseResult The AnyRef result which will be converted to the generic type T.
-   */
-  protected def convertResponseResult(responseResult: AnyRef): T
-  
-  /**
-   * Method used to parse the remote service response.
+   * Method used to parse and emit the remote service response.
    * @param jmsMessage The JMS message to parse.
    */
-  protected def parseRemoteServiceResponse(jmsMessage: Message): AnyRef = {
+  protected def emitRemoteServiceResponse(jmsMessage: Message, responseSuscriber: Subscriber[AnyRef]): Unit = {
     
     val jmsMessageID = jmsMessage.getJMSMessageID
     
@@ -54,7 +49,7 @@ abstract class AbstractJSONRPC2ServiceCaller[T] extends AbstractRemoteServiceCal
         JSONRPC2Response.parse(responseText)
       }
       case _ => throw newServiceException(
-        "invalid JMS Message($jmsMessageID), it must be a TextMessage to be converted to a JSONRPC2Response !"
+        s"invalid JMS Message($jmsMessageID), it must be a TextMessage to be converted to a JSONRPC2Response !"
       )
     }
     
@@ -75,17 +70,21 @@ abstract class AbstractJSONRPC2ServiceCaller[T] extends AbstractRemoteServiceCal
       }
     }
     
-    jsonResponse.getResult
+    // Emit the response
+    responseSuscriber.onNext(jsonResponse.getResult)
   }
   
   /**
    * Execute the remote JSON-RPC method and wait for the response.
    * @param methodName The name of the method to execute remotely.
    * @param namedParameters A Map of named parameters that will be sent in the request.
+   * @param convertResponseResult A function used to convert the response from AnyRef to generic T type.
    */
-  def executeRemoteMethod(
+  def executeRemoteMethod[T](
     methodName: String,
-    namedParams: Option[java.util.Map[String,AnyRef]] = None
+    namedParams: Option[java.util.Map[String,AnyRef]],
+    annotateRequest: Option[TextMessage => Unit],
+    convertResponseResult: AnyRef => T
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
     val jsonRpcRequest = new JSONRPC2Request(methodName, AbstractJSONRPC2ServiceCaller.newJsonRequestId())
@@ -97,9 +96,12 @@ abstract class AbstractJSONRPC2ServiceCaller[T] extends AbstractRemoteServiceCal
     val textMessage = callerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString())
     textMessage.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
     
+    if (annotateRequest.isDefined) annotateRequest.get.apply(textMessage)
+    
     this.callRemoteService(textMessage).map { result: AnyRef =>
-      this.convertResponseResult(result)
+      convertResponseResult(result)
     }
+    
   }
-
+  
 }

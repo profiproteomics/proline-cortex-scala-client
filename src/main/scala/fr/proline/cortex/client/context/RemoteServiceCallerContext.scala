@@ -2,20 +2,15 @@ package fr.proline.cortex.client.context
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
-import javax.jms.JMSContext
-import javax.jms.Session
-
+import javax.jms._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-
 import com.typesafe.scalalogging.StrictLogging
-
 import fr.proline.cortex.api.CortexConstants
-
 import rx.lang.scala.schedulers.ExecutionContextScheduler
+import fr.proline.cortex.api.JMSConnectionConfig
 
 object BuildRemoteServiceCallerContext extends StrictLogging {
   
@@ -23,14 +18,36 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
     queueName: String = CortexConstants.DEFAULT_PROLINE_SERVICE_REQUEST_QUEUE_NAME
   )(implicit managedJmsContext: JMSContext): RemoteServiceCallerContext = {
     
+    logger.info(s"Using JMS Queue '$queueName'")
+    
     // Create a single thread executor that will be used for JMS messages processing
-    val singleThreadExecutor = Executors.newSingleThreadExecutor
+    implicit val singleThreadExecutor = Executors.newSingleThreadExecutor
     implicit val execCtx = ExecutionContext.fromExecutor(singleThreadExecutor)
     
+    // The JMSContext and its related objects (Session, Producer, Consumer) MUST be confined in a single Thread
+    // Thus we create the RemoteServiceCallerContext in a Future executed in the singleThreadExecutor previously instantiated
+    // Important: this single Thread ExecutorService must be shut down by calling the close() method of the RemoteServiceCallerContext
     val futureResult = Future {
+      logger.debug("Creation new remote service caller JMSContext from thread: " + Thread.currentThread().getName() )
+      
       // Create a new CLIENT_ACKNOWLEDGE JMS Context (JMS Context and its underlying Session MUST be confined in current Thread)
       val serviceCallerJmsCtx = managedJmsContext.createContext(Session.CLIENT_ACKNOWLEDGE)
-      new RemoteServiceCallerContext(serviceCallerJmsCtx, queueName, singleThreadExecutor)
+      
+      // Instantiate the Proline remote service JMS Queue
+      val jmsQueue = serviceCallerJmsCtx.createQueue(queueName)
+      
+      // Create a JMS Message Producer (Producer MUST be confined in current Thread)
+      val jmsProducer = serviceCallerJmsCtx.createProducer()
+      
+      // Create a temporary queue for the replies consumption
+      val temporaryReplyQueue = serviceCallerJmsCtx.createTemporaryQueue()
+      
+      new RemoteServiceCallerContext(
+        serviceCallerJmsCtx,
+        jmsQueue,
+        jmsProducer,
+        temporaryReplyQueue
+      )
     }
     
     Await.result(futureResult, Duration.Inf)
@@ -39,22 +56,12 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
 
 class RemoteServiceCallerContext private[context](
   val jmsContext: JMSContext,
-  val queueName: String,
-  val threadExecutor: ExecutorService
-)(implicit val execCtx: ExecutionContext) extends StrictLogging {
-  
-  logger.info(s"Using JMS Queue '$queueName'")
+  val jmsQueue: Queue,
+  val jmsProducer: JMSProducer,
+  val temporaryReplyQueue: TemporaryQueue
+)(implicit val execCtx: ExecutionContext, implicit private val threadExecutor: ExecutorService) extends StrictLogging {
   
   val execCtxScheduler = ExecutionContextScheduler(execCtx)
-  
-  // Instantiate the Proline remote service JMS Queue
-  val jmsQueue = jmsContext.createQueue(queueName)
-  
-  // Create a JMS Message Producer (Producer MUST be confined in current Thread)
-  val jmsProducer = jmsContext.createProducer()
-  
-  // Create a temporary queue for the replies consumption
-  val temporaryReplyQueue = jmsContext.createTemporaryQueue()
   
   def close() {
     jmsContext.close()

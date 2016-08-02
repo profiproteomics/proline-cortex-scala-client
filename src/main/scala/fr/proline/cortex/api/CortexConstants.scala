@@ -6,7 +6,8 @@ object CortexConstants {
 
   val PROLINE_PROCESS_METHOD_NAME = "process"
 
-  //val PROLINE_GET_RSC_METHOD_NAME = "get_resource_as_stream"
+  // TODO: remove me and create corresponding API
+  val PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME = "get_resource_as_stream"
 
   val JMS_SERVER_HOST_PARAM_KEY = "jms.server.host"
 

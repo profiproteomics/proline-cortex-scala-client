@@ -5,7 +5,13 @@ import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 import rx.lang.scala.Observable
 
-abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2ServiceCaller[T] {
+abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2ServiceCaller {
+  
+  /**
+   * Abstract method used to convert the remote service response result.
+   * @param responseResult The AnyRef result which will be converted to the generic type T.
+   */
+  protected def convertResponseResult(responseResult: AnyRef): T
   
   /**
    * Execute the remote JSON-RPC processing service and wait for the response.
@@ -14,7 +20,7 @@ abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2
   def runService(
     namedParams: Option[java.util.Map[String,AnyRef]] = None
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
-    executeRemoteMethod(CortexConstants.PROLINE_PROCESS_METHOD_NAME, namedParams)
+    executeRemoteMethod(CortexConstants.PROLINE_PROCESS_METHOD_NAME, namedParams, None, convertResponseResult)
   }
   
 }
