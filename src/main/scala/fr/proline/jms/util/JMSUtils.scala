@@ -63,7 +63,9 @@ object JMSUtils extends LazyLogging {
 
       jmsMessage match {
         case tm: TextMessage => buff.append(TAB).append(tm.getText)
+        case _ => {}
       }
+      
       // TODO: do we need this ???
       buff.append(LINE_SEPARATOR)
       
