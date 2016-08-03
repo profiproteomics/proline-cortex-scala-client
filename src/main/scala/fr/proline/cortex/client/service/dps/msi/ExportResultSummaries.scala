@@ -3,6 +3,7 @@ package fr.proline.cortex.client.service.dps.msi
 import java.io.File
 import java.util.ArrayList
 
+import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
 
 import fr.profi.util.serialization.ProfiJson
@@ -22,19 +23,19 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
   
   def export(
     rsmIdentifiers: Seq[RsmIdentifier],
-    fileFormat: String,
+    fileFormat: FileFormat.Value,
     fileName: Option[String] = None,
     fileDirectory: Option[String] = None,
     extraParams: Option[Map[String, Any]] = None
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[String]] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
-    namedParams.put(FILE_FORMAT_PARAM, fileFormat )
+    namedParams.put(FILE_FORMAT_PARAM, fileFormat.toString )
     
     if (fileName.isDefined) namedParams.put(FILE_NAME_PARAM, fileName.get)
     if (fileDirectory.isDefined) namedParams.put(FILE_DIRECTORY_PARAM, fileDirectory.get)
-    namedParams.put(OUTPUT_MODE_PARAM, OutputMode.FILE)
+    namedParams.put(OUTPUT_MODE_PARAM, OutputMode.FILE.toString)
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)
     
     this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertFileModeResult )
@@ -55,20 +56,20 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
   
   def exportThenDownload(
     rsmIdentifiers: Seq[RsmIdentifier],
-    fileFormat: String,
+    fileFormat: FileFormat.Value,
     extraParams: Option[Map[String, Any]],
     localFileDirectory: String
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[File] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
-    namedParams.put(FILE_FORMAT_PARAM, fileFormat )
-    namedParams.put(OUTPUT_MODE_PARAM, OutputMode.STREAM)
+    namedParams.put(FILE_FORMAT_PARAM, fileFormat.toString)
+    namedParams.put(OUTPUT_MODE_PARAM, OutputMode.STREAM.toString)
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)
     
     this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertStreamModeResult ).flatMap { resultMap =>
       val prolineNodeId = resultMap(JMSConstants.PROLINE_NODE_ID_KEY).asInstanceOf[String]
-      val filePaths = resultMap("file_paths").asInstanceOf[ArrayList[String]].toList
+      val filePaths = resultMap("file_paths").asInstanceOf[List[String]]
       
       val observableFiles = filePaths.map { filePath =>
         val localFilePath = localFileDirectory + '/' + new File(filePath).getName

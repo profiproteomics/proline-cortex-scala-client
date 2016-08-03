@@ -13,9 +13,9 @@ object ChangeRepresentativeProteinMatch extends AbstractRemoteProcessingServiceC
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, resultSummaryId: java.lang.Long, rules: Array[RepresentativeProteinMatchRule])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def apply(projectId: Long, resultSummaryId: Long, rules: Array[RepresentativeProteinMatchRule])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SUMMARY_ID_PARAM, resultSummaryId )
     namedParams.put(CHANGE_TYPICAL_RULES_PARAM, rules)

@@ -7,6 +7,8 @@ import java.io.FileOutputStream
 
 import javax.jms.TextMessage
 
+import scala.collection.mutable.HashMap
+
 import org.hornetq.api.jms.HornetQJMSConstants
 
 import fr.proline.cortex.api.CortexConstants
@@ -26,7 +28,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
   def download(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[File] = {
     
     // TODO: create the corresponding PARAM API
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put("file_path", remoteFilePath)
     
     val requestAnnotator = { textMessage: TextMessage =>

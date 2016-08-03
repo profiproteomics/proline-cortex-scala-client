@@ -11,15 +11,15 @@ import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import rx.lang.scala.Observable
 
 case class GenerateSpectrumMatchesConfig(
-  resultSetId: java.lang.Long,
-  resultSummaryId: Option[java.lang.Long],
+  resultSetId: Long,
+  resultSummaryId: Option[Long],
   peptideMatchIds: Option[Seq[Long]],
-  forceInsert: Option[java.lang.Boolean] = None
+  forceInsert: Option[Boolean] = None
 ) extends IRemoteServiceConfig {
   
   import GenerateSpectrumMatchesService.PROCESS_METHOD._
   
-  def putInNamedParamMap(namedParams: java.util.HashMap[String,AnyRef] ): java.util.HashMap[String,AnyRef] = {
+  def putInNamedParamMap(namedParams: HashMap[String,Any] ): HashMap[String,Any] = {
     namedParams.put(RESULT_SET_ID_PARAM, resultSetId)
     if (resultSummaryId.isDefined) namedParams.put(RESULT_SUMMARY_ID_PARAM, resultSummaryId.get)
     if (peptideMatchIds.isDefined) namedParams.put(PEPTIDE_MATCH_IDS_PARAM, peptideMatchIds.get)
@@ -33,9 +33,9 @@ object GenerateSpectrumMatches extends AbstractRemoteProcessingServiceCaller[Boo
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = config.putInNamedParamMap( new java.util.HashMap[String,AnyRef]() )
+    val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)
     
     this.runService( Some(namedParams) )

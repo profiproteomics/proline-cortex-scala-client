@@ -13,18 +13,18 @@ object DeleteOrphanData extends AbstractRemoteProcessingServiceCaller[Boolean] w
   
   import this.PROCESS_METHOD._
   
-  def deleteResultSets(projectId: java.lang.Long, resultSetIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SET_IDS_PARAM, resultSetIds )
     
     this.runService( Some(namedParams) )
   }
   
-  def deleteResultSummaries(projectId: java.lang.Long, resultSummaryIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SUMMARY_IDS_PARAM, resultSummaryIds )
     

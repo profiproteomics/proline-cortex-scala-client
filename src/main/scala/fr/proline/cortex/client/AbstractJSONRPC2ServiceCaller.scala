@@ -5,11 +5,14 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.jms.Message
 import javax.jms.TextMessage
 
+import scala.collection.mutable.HashMap
+
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
 
+import fr.profi.util.jsonrpc.SerializableJSONRPC2Request
+import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-import fr.proline.jms.util.JMSConstants
 
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscriber
@@ -46,6 +49,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
           )
         }
         
+        // TODO: use ProfiJSONRPC2Response ???
         JSONRPC2Response.parse(responseText)
       }
       case _ => throw newServiceException(
@@ -82,20 +86,19 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
    */
   def executeRemoteMethod[T](
     methodName: String,
-    namedParams: Option[java.util.Map[String,AnyRef]],
+    namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
-    val jsonRpcRequest = new JSONRPC2Request(methodName, AbstractJSONRPC2ServiceCaller.newJsonRequestId())
+    // Convert the namedParams to JSONRPC2Request compliant java.util.Map
+    val jsonRpcRequest = new SerializableJSONRPC2Request(
+      id = AbstractJSONRPC2ServiceCaller.newJsonRequestId(),
+      method = methodName,
+      params = namedParams.orNull
+    )
     
-    if (namedParams.isDefined) {
-      jsonRpcRequest.setNamedParams(namedParams.get)
-    }
-    
-    val textMessage = callerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString())
-    textMessage.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
-    
+    val textMessage = callerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
     if (annotateRequest.isDefined) annotateRequest.get.apply(textMessage)
     
     this.callRemoteService(textMessage).map { result: AnyRef =>

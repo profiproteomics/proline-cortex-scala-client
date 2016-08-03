@@ -1,5 +1,7 @@
 package fr.proline.cortex.client.service.misc
 
+import scala.collection.mutable.HashMap
+
 import fr.profi.util.serialization.ProfiJson
 import fr.profi.util.primitives._
 import fr.proline.cortex.api.fs._
@@ -35,7 +37,7 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
   
   def retrieveMountPointsByType(directoryType: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[MountPoint]] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(RETRIEVE_MOUNT_POINTS_BY_TYPE_METHOD.DIR_TYPE_PARAM, directoryType)
     
     this.executeRemoteMethod(RETRIEVE_MOUNT_POINTS_BY_TYPE_METHOD.name, Some(namedParams), None, convertResponseToMountPoints )
@@ -43,7 +45,7 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
   
   def retrieveMountPointsByLabel(label: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[MountPoint]] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(RETRIEVE_MOUNT_POINTS_BY_LABEL_METHOD.LABEL_PARAM, label)
     
     this.executeRemoteMethod(RETRIEVE_MOUNT_POINTS_BY_LABEL_METHOD.name, Some(namedParams), None, convertResponseToMountPoints )
@@ -65,14 +67,14 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
   def retrieveDirectoryContent(
     labelPath: String,
     directoryType: Option[String],
-    includeFiles: java.lang.Long,
-    includeDirs: java.lang.Long,
+    includeFiles: Long,
+    includeDirs: Long,
     extensionFilter: Option[String]
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[FileAttrs]] = {
     
     import RETRIEVE_DIRECTORY_CONTENT_METHOD._
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(LABEL_PATH_PARAM, labelPath)
     if (directoryType.isDefined) namedParams.put(DIRECTORY_TYPE_PARAM, directoryType.get)
     namedParams.put(INCLUDE_FILES_PARAM, includeFiles)

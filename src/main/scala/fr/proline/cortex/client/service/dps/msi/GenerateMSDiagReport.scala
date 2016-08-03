@@ -12,9 +12,9 @@ object GenerateMSDiagReport extends AbstractRemoteProcessingServiceCaller[String
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, resultSetId: java.lang.Long, msdiagSettings: Map[String, Any])(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
+  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any])(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SET_ID_PARAM, resultSetId )
     

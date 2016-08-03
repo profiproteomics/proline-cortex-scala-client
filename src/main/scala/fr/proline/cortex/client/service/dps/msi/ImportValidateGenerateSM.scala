@@ -14,7 +14,7 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
   import this.PROCESS_METHOD._
   
   def apply(
-    projectId: java.lang.Long,
+    projectId: Long,
     
     // Import specific parameters
     importResultFileConfig: ImportResultFileConfig,
@@ -23,12 +23,12 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
     validateResultSetConfig: ValidateResultSetConfig,
     
     // "Generate Spectrum Matches" specific parameters
-    generateSpectrumMatches: Option[java.lang.Boolean] = None,
-    forceInsert: Option[java.lang.Boolean] = None
+    generateSpectrumMatches: Option[Boolean] = None,
+    forceInsert: Option[Boolean] = None
     
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     
     // Put import specific parameters in Named Parameters Map
     importResultFileConfig.putInNamedParamMap( namedParams )
@@ -45,12 +45,12 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
   
   /*
   def apply(
-    projectId: java.lang.Long,
+    projectId: Long,
     
     // Import specific parameters
     resultFiles: Seq[ResultFileDescriptorRuleId],
-    instrumentConfigId: java.lang.Long,
-    peaklistSoftwareId: java.lang.Long,
+    instrumentConfigId: Long,
+    peaklistSoftwareId: Long,
     importerProperties: Option[Map[String, Any]] = None,
     
     // Validation specific parameters
@@ -61,18 +61,18 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
     protSetValidatorConfig: Option[ProtSetValidatorConfig],
     
     // Generate Spectrum Matches specific parameters
-    generateSpectrumMatches: Option[java.lang.Boolean],
-    forceInsert: Option[java.lang.Boolean] = None
+    generateSpectrumMatches: Option[Boolean],
+    forceInsert: Option[Boolean] = None
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)
     
-    namedParams.put(USE_DECOY_REGEX_PARAM, false: java.lang.Boolean)
+    namedParams.put(USE_DECOY_REGEX_PARAM, false: Boolean)
     namedParams.put(RESULT_FILES_PARAM, resultFiles)
     namedParams.put(INSTRUMENT_CONFIG_ID_PARAM, instrumentConfigId)
     namedParams.put(PEAKLIST_SOFTWARE_ID_PARAM, peaklistSoftwareId)
-    namedParams.put(SAVE_SPECTRUM_MATCHES_PARAM, false: java.lang.Boolean)
+    namedParams.put(SAVE_SPECTRUM_MATCHES_PARAM, false: Boolean)
     if (importerProperties.isDefined) namedParams.put(IMPORTER_PROPERTIES_PARAM, importerProperties.get)
     
     if (pepMatchFilters.isDefined) namedParams.put(PEP_MATCH_FILTERS_PARAM, pepMatchFilters.get)

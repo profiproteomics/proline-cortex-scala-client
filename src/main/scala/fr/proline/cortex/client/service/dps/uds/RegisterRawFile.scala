@@ -17,11 +17,11 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with 
     rawFileIdentifier: String,
     rawFilePath: Option[String],
     mzdbFilePath: Option[String],
-    instrumentId: java.lang.Long,
-    ownerId: java.lang.Long
+    instrumentId: Long,
+    ownerId: Long
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(RAW_FILE_IDENTIFIER_PARAM, rawFileIdentifier)
     if (rawFilePath.isDefined) namedParams.put(RAW_FILE_PATH_PARAM, rawFilePath.get)
     if (mzdbFilePath.isDefined) namedParams.put(MZDB_FILE_PATH_PARAM, mzdbFilePath.get)

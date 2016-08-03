@@ -1,5 +1,7 @@
 package fr.proline.cortex.client.service.admin
 
+import scala.collection.mutable.HashMap
+
 import fr.profi.util.primitives._
 import fr.proline.cortex.api.service.admin.IUserAccountService
 import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
@@ -11,7 +13,7 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
   
   def create(login: String, passwordHash: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(CREATE_METHOD.LOGIN_PARAM, login)
     namedParams.put(CREATE_METHOD.PASSWORD_HASH_PARAM, passwordHash )
     
@@ -20,7 +22,7 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
   
   def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(CHANGE_PASSWORD_METHOD.LOGIN_PARAM, login)
     namedParams.put(CHANGE_PASSWORD_METHOD.OLD_PASSWORD_HASH_PARAM, oldPasswordHash )
     namedParams.put(CHANGE_PASSWORD_METHOD.NEW_PASSWORD_HASH_PARAM, newPasswordHash )
@@ -33,10 +35,10 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
     passwordHash: String
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(AUTHENTICATE_METHOD.LOGIN_PARAM, login)
     namedParams.put(AUTHENTICATE_METHOD.PASSWORD_HASH_PARAM, passwordHash )
-    namedParams.put(AUTHENTICATE_METHOD.RETURN_DB_PASSWORD_PARAM, java.lang.Boolean.FALSE )
+    namedParams.put(AUTHENTICATE_METHOD.RETURN_DB_PASSWORD_PARAM, false )
    
     this.executeRemoteMethod(AUTHENTICATE_METHOD.name, Some(namedParams), None, toBoolean )
   }
@@ -48,10 +50,10 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
     publicKey: String
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(AUTHENTICATE_METHOD.LOGIN_PARAM, login)
     namedParams.put(AUTHENTICATE_METHOD.PASSWORD_HASH_PARAM, passwordHash )
-    namedParams.put(AUTHENTICATE_METHOD.RETURN_DB_PASSWORD_PARAM, java.lang.Boolean.TRUE )
+    namedParams.put(AUTHENTICATE_METHOD.RETURN_DB_PASSWORD_PARAM, true )
     namedParams.put(AUTHENTICATE_METHOD.PUBLIC_KEY_PARAM, publicKey )
     
     this.executeRemoteMethod(AUTHENTICATE_METHOD.name, Some(namedParams), None, _.asInstanceOf[String] )

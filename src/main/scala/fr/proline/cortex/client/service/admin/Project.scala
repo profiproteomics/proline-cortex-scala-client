@@ -13,9 +13,9 @@ object Project extends AbstractRemoteProcessingServiceCaller[Long] with ICreateP
   
   import this.PROCESS_METHOD._
   
-  def create(name: String, description: Option[String], ownerId: java.lang.Long)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  def create(name: String, description: Option[String], ownerId: Long)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(NAME_PARAM, name)
     namedParams.put(OWNER_ID_PARAM, ownerId )
     if (description.isDefined) namedParams.put(DESCRIPTION_PARAM, description.get)

@@ -13,8 +13,8 @@ import rx.lang.scala.Observable
 
 case class ValidateIdentDSInTreeConfig(
   parentDatasetIds: Array[Long],
-  mergeResultSets: java.lang.Boolean,
-  useTdCompetition: Option[java.lang.Boolean],
+  mergeResultSets: Boolean,
+  useTdCompetition: Option[Boolean],
   pepMatchFilters: Option[Array[FilterConfig]],
   pepMatchValidatorConfig: Option[PepMatchValidatorConfig],
   pepSetScoreType: Option[String], // TODO: move fr.proline.core.algo.msi.scoring.PepSetScoring to OM
@@ -25,7 +25,7 @@ case class ValidateIdentDSInTreeConfig(
   import ValidateIdentDSInTreeService.PROCESS_METHOD._
   import ValidateResultSetService.PROCESS_METHOD._
   
-  def putInNamedParamMap(namedParams: java.util.HashMap[String,AnyRef] ): java.util.HashMap[String,AnyRef] = {
+  def putInNamedParamMap(namedParams: HashMap[String,Any] ): HashMap[String,Any] = {
     
     namedParams.put(PARENT_DATASET_IDS_PARAM, parentDatasetIds)
     namedParams.put(MERGE_RESULT_SETS_PARAM, mergeResultSets)
@@ -44,9 +44,9 @@ object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long] wit
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, config: ValidateIdentDSInTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  def apply(projectId: Long, config: ValidateIdentDSInTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = config.putInNamedParamMap( new java.util.HashMap[String,AnyRef]() )
+    val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)
     
     this.runService( Some(namedParams) )

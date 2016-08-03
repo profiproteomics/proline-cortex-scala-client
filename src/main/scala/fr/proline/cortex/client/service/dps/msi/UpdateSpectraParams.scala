@@ -14,12 +14,12 @@ object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int] wi
   import this.PROCESS_METHOD._
   
   def apply(
-    projectId: java.lang.Long,
+    projectId: Long,
     resultSetIds: Seq[Long],
-    peaklistSoftwareId: java.lang.Long
+    peaklistSoftwareId: Long
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Int] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SET_IDS_PARAM, resultSetIds )
     namedParams.put(PEAKLIST_SOFTWARE_ID_PARAM, peaklistSoftwareId )

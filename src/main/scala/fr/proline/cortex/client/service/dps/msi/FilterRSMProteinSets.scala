@@ -13,9 +13,9 @@ object FilterRSMProteinSets extends AbstractRemoteProcessingServiceCaller[Boolea
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, resultSummaryId: java.lang.Long, protSetFilters: Seq[FilterConfig])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def apply(projectId: Long, resultSummaryId: Long, protSetFilters: Seq[FilterConfig])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SUMMARY_ID_PARAM, resultSummaryId )
     namedParams.put(PROT_SET_FILTERS_PARAM, protSetFilters)

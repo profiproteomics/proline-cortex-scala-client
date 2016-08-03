@@ -13,9 +13,9 @@ object GetExportInformation extends AbstractRemoteProcessingServiceCaller[String
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, datasetId: java.lang.Long, extraParams: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
+  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(DATASET_ID_PARAM, datasetId )
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)

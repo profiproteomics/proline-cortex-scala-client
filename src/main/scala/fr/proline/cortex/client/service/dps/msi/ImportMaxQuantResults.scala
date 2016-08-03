@@ -1,5 +1,7 @@
 package fr.proline.cortex.client.service.dps.msi
 
+import scala.collection.mutable.HashMap
+
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
@@ -12,13 +14,13 @@ object ImportMaxQuantResults extends AbstractRemoteProcessingServiceCaller[Map[S
   import this.PROCESS_METHOD._
   
   def apply(
-    projectId: java.lang.Long,
+    projectId: Long,
     resultFilesDir: String,
-    instrumentConfigId: java.lang.Long,
-    peaklistSoftwareId: java.lang.Long
+    instrumentConfigId: Long,
+    peaklistSoftwareId: Long
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Map[String, Any]] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_FILES_DIR_PARAM, resultFilesDir)
     namedParams.put(INSTRUMENT_CONFIG_ID_PARAM, instrumentConfigId)

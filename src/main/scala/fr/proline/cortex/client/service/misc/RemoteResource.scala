@@ -6,6 +6,8 @@ import java.nio.file.Files
 
 import javax.jms.TextMessage
 
+import scala.collection.mutable.HashMap
+
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
 import fr.proline.cortex.client.AbstractByteStreamServiceCaller
@@ -23,7 +25,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
   def getBytes(remoteFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[ByteBuffer] = {
     
     // TODO: create the corresponding PARAM API
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put("file_path", remoteFilePath)
     
     val messageAnnotator = { textMessage: TextMessage =>

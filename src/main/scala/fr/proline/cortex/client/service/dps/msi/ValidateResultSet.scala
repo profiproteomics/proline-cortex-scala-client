@@ -11,9 +11,9 @@ import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import rx.lang.scala.Observable
 
 case class ValidateResultSetConfig(
-  resultSetId: java.lang.Long,
+  resultSetId: Long,
   description: String,
-  useTdCompetition: Option[java.lang.Boolean],
+  useTdCompetition: Option[Boolean],
   pepMatchFilters: Option[Array[FilterConfig]],
   pepMatchValidatorConfig: Option[PepMatchValidatorConfig],
   pepSetScoreType: Option[String], // TODO: move fr.proline.core.algo.msi.scoring.PepSetScoring to OM
@@ -23,7 +23,7 @@ case class ValidateResultSetConfig(
   
   import ValidateResultSetService.PROCESS_METHOD._
   
-  def putInNamedParamMap(namedParams: java.util.HashMap[String,AnyRef] ): java.util.HashMap[String,AnyRef] = {
+  def putInNamedParamMap(namedParams: HashMap[String,Any] ): HashMap[String,Any] = {
     
     namedParams.put(RESULT_SET_ID_PARAM, resultSetId)
     namedParams.put(DESCRIPTION_PARAM, description)
@@ -42,9 +42,9 @@ object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long] wit
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, config: ValidateResultSetConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
-    val namedParams = config.putInNamedParamMap( new java.util.HashMap[String,AnyRef]() )
+    val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)
     
     this.runService( Some(namedParams) )

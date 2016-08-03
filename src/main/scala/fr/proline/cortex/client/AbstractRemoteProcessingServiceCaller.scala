@@ -1,5 +1,7 @@
 package fr.proline.cortex.client
 
+import scala.collection.mutable.HashMap
+
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
@@ -18,7 +20,7 @@ abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2
    * @param namedParameters A Map of named parameters that will be sent in the request.
    */
   def runService(
-    namedParams: Option[java.util.Map[String,AnyRef]] = None
+    namedParams: Option[HashMap[String,Any]] = None
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     executeRemoteMethod(CortexConstants.PROLINE_PROCESS_METHOD_NAME, namedParams, None, convertResponseResult)
   }

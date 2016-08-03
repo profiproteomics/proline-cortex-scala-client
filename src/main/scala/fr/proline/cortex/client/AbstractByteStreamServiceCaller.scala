@@ -6,6 +6,8 @@ import javax.jms.BytesMessage
 import javax.jms.Message
 import javax.jms.TextMessage
 
+import scala.collection.mutable.HashMap
+
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 import rx.lang.scala.Observable
@@ -23,7 +25,7 @@ abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCa
    */
   def executeRemoteMethod(
     methodName: String,
-    namedParams: Option[java.util.Map[String,AnyRef]],
+    namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit]
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[ByteBuffer] = {
     super.executeRemoteMethod[ByteBuffer](methodName, namedParams, annotateRequest, _.asInstanceOf[ByteBuffer] )

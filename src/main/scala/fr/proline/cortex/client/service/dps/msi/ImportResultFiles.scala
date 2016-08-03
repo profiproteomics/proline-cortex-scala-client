@@ -1,5 +1,7 @@
 package fr.proline.cortex.client.service.dps.msi
 
+import scala.collection.mutable.HashMap
+
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.msi.ImportResultFilesServiceV2_0.{ ImportedResultFile => ResultFile }
@@ -11,15 +13,15 @@ import rx.lang.scala.Observable
 
 case class ImportResultFileConfig(
   resultFiles: Seq[ResultFileDescriptorRuleId],
-  instrumentConfigId: java.lang.Long,
-  peaklistSoftwareId: java.lang.Long,
-  storeSpectrumMatches: java.lang.Boolean,
+  instrumentConfigId: Long,
+  peaklistSoftwareId: Long,
+  storeSpectrumMatches: Boolean,
   importerProperties: Option[Map[String, Any]] = None
 ) extends IRemoteServiceConfig {
   
   import ImportResultFilesServiceV2_0.PROCESS_METHOD._
   
-  def putInNamedParamMap(namedParams: java.util.HashMap[String,AnyRef] ): java.util.HashMap[String,AnyRef] = {
+  def putInNamedParamMap(namedParams: HashMap[String,Any] ): HashMap[String,Any] = {
     namedParams.put(RESULT_FILES_PARAM_V2_0, resultFiles)
     namedParams.put(INSTRUMENT_CONFIG_ID_PARAM, instrumentConfigId)
     namedParams.put(PEAKLIST_SOFTWARE_ID_PARAM, peaklistSoftwareId)
@@ -34,9 +36,9 @@ object ImportResultFiles extends AbstractRemoteProcessingServiceCaller[Array[Res
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: java.lang.Long, config: ImportResultFileConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[ResultFile]] = {
+  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[ResultFile]] = {
     
-    val namedParams = config.putInNamedParamMap( new java.util.HashMap[String,AnyRef]() )
+    val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)
     
     this.runService( Some(namedParams) )

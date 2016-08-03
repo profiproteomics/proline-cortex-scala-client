@@ -14,13 +14,13 @@ object PostProcessQuantitation extends AbstractRemoteProcessingServiceCaller[Boo
   import this.PROCESS_METHOD._
   
   def apply(
-    projectId: java.lang.Long,
-    masterQuantChannelId: java.lang.Long,
+    projectId: Long,
+    masterQuantChannelId: Long,
     // TODO: put the ProfilizerConfig in Proline-OM ?
     config: AnyRef // ProfilizerConfig
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(MASTER_QUANT_CHANNEL_ID_PARAM, masterQuantChannelId )
     namedParams.put(CONFIG_PARAM, config )

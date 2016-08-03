@@ -13,14 +13,14 @@ import rx.lang.scala.Observable
 object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSetsServiceV2_0 {
   
   def mergeResultSets(
-    projectId: java.lang.Long,
+    projectId: Long,
     resultSetIds: Seq[Long],
-    additionMode: Option[java.lang.Boolean]
+    additionMode: Option[Boolean]
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
     
     import MERGE_RESULT_SETS_METHOD._
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SET_IDS_PARAM, resultSetIds )
     if (additionMode.isDefined) namedParams.put(AGGREGATION_MODE_PARAM, additionMode.get)
@@ -29,14 +29,14 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
   }
   
   def mergeResultSummaries(
-    projectId: java.lang.Long,
+    projectId: Long,
     resultSummaryIds: Seq[Long],
-    additionMode: Option[java.lang.Boolean]
+    additionMode: Option[Boolean]
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[RSMMergeResult] = {
     
     import MERGE_RESULT_SUMMARIES_METHOD._
     
-    val namedParams = new java.util.HashMap[String,AnyRef]()
+    val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
     namedParams.put(RESULT_SUMMARY_IDS_PARAM, resultSummaryIds )
     if (additionMode.isDefined) namedParams.put(AGGREGATION_MODE_PARAM, additionMode.get)

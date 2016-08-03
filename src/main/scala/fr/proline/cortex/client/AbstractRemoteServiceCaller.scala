@@ -13,6 +13,7 @@ import fr.proline.cortex.api._
 import fr.proline.cortex.api.CortexConstants._
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.service.api.IRemoteServiceIdentity
+import fr.proline.jms.util.JMSConstants
 import fr.proline.jms.util.JMSUtils
 
 import rx.lang.scala.Observable
@@ -52,6 +53,10 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
    */
   protected def callRemoteService(jmsRequest: Message)(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
+    // Add some header properties to target the appropriate service and its corresponding version 
+    jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
+    jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_VERSION_KEY, serviceVersion)
+    
     val observer = Observable[T] { suscriber =>
       
       val startingTime = System.currentTimeMillis()
@@ -60,7 +65,11 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       
       //val latch = new CountDownLatch(1)
       
-      val messageListener = new Object with MessageListener {
+      // Create new MessageConsumer that will be used to listen for the remote service response
+      // TODO: find a way to maintain the responseConsumer active ?
+      var responseConsumer = callerCtx.jmsContext.createConsumer(callerCtx.temporaryReplyQueue)
+      
+      var messageListener = new Object with MessageListener {
         override def onMessage(jmsResponse: Message) {
           Future {
             try {
@@ -72,7 +81,6 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
               
               if (jmsResponse != null) {
                 logger.debug(s"Received message #$messageNumber ${jmsResponse.getJMSMessageID} from remote service '$serviceName'")
-                // TODO: put as trace
                 logger.debug(s"Content of message ${jmsResponse.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsResponse) )
             
                 emitRemoteServiceResponse(jmsResponse, suscriber)
@@ -91,6 +99,11 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
                 logger.error("Error during the processing of the remote service response",t) //return Observable.error(t)
                 suscriber.onError(t)
               }
+            } finally {
+              // Important: don't forget to close the response consumer !
+              // Otherwise other consumer instances may consume the messages sent by this producer
+              responseConsumer.close()
+              responseConsumer = null
             }
             
             suscriber.onCompleted()
@@ -99,9 +112,6 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
         }
       }
       
-      // Create new MessageConsumer that will be used to listen for the remote service response
-      // TODO: find a way to maintain the responseConsumer active
-      val responseConsumer = callerCtx.jmsContext.createConsumer(callerCtx.temporaryReplyQueue)
       responseConsumer.setMessageListener(messageListener)
       
       // Tell the remote service to reply to a particular queue: a TemporaryQueue used to store Server->Client responses
