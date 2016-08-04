@@ -2,15 +2,19 @@ package fr.proline.cortex.client.context
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 import javax.jms._
+
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+
 import com.typesafe.scalalogging.StrictLogging
+
 import fr.proline.cortex.api.CortexConstants
+
 import rx.lang.scala.schedulers.ExecutionContextScheduler
-import fr.proline.cortex.api.JMSConnectionConfig
 
 object BuildRemoteServiceCallerContext extends StrictLogging {
   
@@ -39,14 +43,10 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
       // Create a JMS Message Producer (Producer MUST be confined in current Thread)
       val jmsProducer = serviceCallerJmsCtx.createProducer()
       
-      // Create a temporary queue for the replies consumption
-      val temporaryReplyQueue = serviceCallerJmsCtx.createTemporaryQueue()
-      
       new RemoteServiceCallerContext(
         serviceCallerJmsCtx,
         jmsQueue,
-        jmsProducer,
-        temporaryReplyQueue
+        jmsProducer
       )
     }
     
@@ -54,11 +54,10 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
   }
 }
 
-class RemoteServiceCallerContext private[context](
+case class RemoteServiceCallerContext private[context](
   val jmsContext: JMSContext,
   val jmsQueue: Queue,
-  val jmsProducer: JMSProducer,
-  val temporaryReplyQueue: TemporaryQueue
+  val jmsProducer: JMSProducer
 )(implicit val execCtx: ExecutionContext, implicit private val threadExecutor: ExecutorService) extends StrictLogging {
   
   val execCtxScheduler = ExecutionContextScheduler(execCtx)
@@ -79,4 +78,3 @@ class RemoteServiceCallerContext private[context](
   )*/
   
 }
-

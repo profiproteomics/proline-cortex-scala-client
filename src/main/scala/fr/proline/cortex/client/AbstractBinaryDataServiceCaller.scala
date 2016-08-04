@@ -6,6 +6,7 @@ import javax.jms.TextMessage
 
 import scala.collection.mutable.HashMap
 
+import fr.proline.cortex.client.context.BuildRemoteServiceCallerContext
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 import rx.lang.scala.Observable
@@ -24,7 +25,21 @@ abstract class AbstractBinaryDataServiceCaller extends AbstractJSONRPC2ServiceCa
     namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit]
   )(implicit callerCtx: RemoteServiceCallerContext): Observable[BytesMessage] = {
-    super.executeRemoteMethod[BytesMessage](methodName, namedParams, annotateRequest, _.asInstanceOf[BytesMessage] )
+    
+    val newJmsContext = callerCtx.jmsContext.createContext(callerCtx.jmsContext.getSessionMode)
+    val localCallerContext = BuildRemoteServiceCallerContext()(newJmsContext)
+    
+    val bytesMessageObservable = super.executeRemoteMethod[BytesMessage](
+      methodName,
+      namedParams,
+      annotateRequest,
+      _.asInstanceOf[BytesMessage],
+      synchronous = true
+    )(localCallerContext)
+    
+    bytesMessageObservable.doAfterTerminate {
+      localCallerContext.close()
+    }
   }
   
   /**

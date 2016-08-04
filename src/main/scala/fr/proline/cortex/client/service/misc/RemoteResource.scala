@@ -39,7 +39,11 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
   def downloadToFile(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[File] = {
     
     val file = new File(localFilePath)
-    val seekableByteChannel = Files.newByteChannel(file.toPath())
+    
+    val options = new java.util.HashSet[java.nio.file.OpenOption]()
+    options.add(java.nio.file.StandardOpenOption.APPEND)
+    options.add(java.nio.file.StandardOpenOption.CREATE)
+    val seekableByteChannel = Files.newByteChannel(file.toPath(), options)
 
     val observableFile = Observable[File] { suscriber =>
       

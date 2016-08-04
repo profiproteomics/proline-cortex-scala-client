@@ -1,10 +1,9 @@
 package fr.proline.cortex.client.service.dps.msi
 
 import java.io.File
-import java.util.ArrayList
 
-import scala.collection.mutable.HashMap
 import scala.collection.JavaConversions._
+import scala.collection.mutable.HashMap
 
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
@@ -75,6 +74,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
         val localFilePath = localFileDirectory + '/' + new File(filePath).getName
         
         RemoteFile.download(filePath, localFilePath, prolineNodeId)
+        //RemoteResource.downloadToFile(filePath, localFilePath, prolineNodeId)
       }
       
       Observable.from(observableFiles).concat

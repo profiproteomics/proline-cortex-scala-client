@@ -51,7 +51,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
    * If the JMS response is null then an Exception is thrown.
    * Else the JMS response is parsed using the ''parseRemoteServiceResponse'' method.
    */
-  protected def callRemoteService(jmsRequest: Message)(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
+  protected def callRemoteService(jmsRequest: Message, synchronous: Boolean)(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
     
     // Add some header properties to target the appropriate service and its corresponding version 
     jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
@@ -61,23 +61,29 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       
       val startingTime = System.currentTimeMillis()
       
-      logger.info(s"RemoteServiceCaller will send a JMS request for service '$serviceName'")
+      val requestType = if (synchronous) "synchronous" else "asynchronous"
+      logger.info(s"RemoteServiceCaller will send a $requestType JMS request for service '$serviceName'")
       
       //val latch = new CountDownLatch(1)
       
-      // Create new MessageConsumer that will be used to listen for the remote service response
-      // TODO: find a way to maintain the responseConsumer active ?
-      var responseConsumer = callerCtx.jmsContext.createConsumer(callerCtx.temporaryReplyQueue)
+      // Create a temporary queue for the replies consumption
+      val temporaryReplyQueue = callerCtx.jmsContext.createTemporaryQueue()
       
-      var messageListener = new Object with MessageListener {
+      // Tell the remote service to reply to a particular queue: a TemporaryQueue used to store Server->Client responses
+      jmsRequest.setJMSReplyTo(temporaryReplyQueue)
+      
+      // Create new MessageConsumer that will be used to listen for the remote service response
+      val responseConsumer = callerCtx.jmsContext.createConsumer(temporaryReplyQueue)
+      
+      val messageListener = new Object with MessageListener {
         override def onMessage(jmsResponse: Message) {
           Future {
+            val messageNumber = messagesCountSequence.incrementAndGet()
+            
             try {
               val endingTime = System.currentTimeMillis()
-              val requestDuration = (endingTime - startingTime) / 60
+              val requestDuration = (endingTime - startingTime) / 1000
               logger.debug(s"Received JMS response from remote service '$serviceName' after $requestDuration seconds.")
-              
-              val messageNumber = messagesCountSequence.incrementAndGet()
               
               if (jmsResponse != null) {
                 logger.debug(s"Received message #$messageNumber ${jmsResponse.getJMSMessageID} from remote service '$serviceName'")
@@ -88,8 +94,10 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
                 // Tell to the remote server that the JMS message has been successfully consumed
                 jmsResponse.acknowledge()
                 
+                logger.debug(s"Message #$messageNumber ${jmsResponse.getJMSMessageID} has been successfully acknowledged !")
+                
               } else {
-                val errorMsg = s"Error while receiving message #$messageNumber from service '$serviceName' !"
+                val errorMsg = s"Error while receiving message #$messageNumber ${jmsResponse.getJMSMessageID} from service '$serviceName' !"
                 logger.error(errorMsg)
                 
                 throw new Exception(errorMsg)
@@ -102,20 +110,32 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
             } finally {
               // Important: don't forget to close the response consumer !
               // Otherwise other consumer instances may consume the messages sent by this producer
-              responseConsumer.close()
-              responseConsumer = null
+              
+              val closeMsg = s"Closing the response consumer of message #$messageNumber ${jmsResponse.getJMSMessageID} from service '$serviceName'"
+
+              if (synchronous) {
+                logger.debug(closeMsg)
+                responseConsumer.close()
+              } else {
+                Future {
+                  // Important: don't forget to close the response consumer !
+                  // Otherwise other consumer instances may consume the messages sent by this producer
+                  logger.debug(closeMsg)
+                  responseConsumer.close()
+                } (callerCtx.execCtx) // (scala.concurrent.ExecutionContext.Implicits.global)*/
+              }
             }
             
+            // Complete the subscriber
             suscriber.onCompleted()
             
           } (callerCtx.execCtx)
         }
       }
       
-      responseConsumer.setMessageListener(messageListener)
-      
-      // Tell the remote service to reply to a particular queue: a TemporaryQueue used to store Server->Client responses
-      jmsRequest.setJMSReplyTo(callerCtx.temporaryReplyQueue)
+      // Asynchronous message reception handling
+      if (synchronous == false)
+        responseConsumer.setMessageListener(messageListener)
   
       // Send the Message to the remote service using a synchronous send
       // For asynchronous send see: http://www.oracle.com/technetwork/articles/java/jms2messaging-1954190.html
@@ -123,10 +143,17 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       //val completionListener = new RemoteServiceMessageCompletionListener(latch)
       callerCtx.jmsProducer.send(callerCtx.jmsQueue, jmsRequest)
       
-      logger.debug(s"JMS Message ${jmsRequest.getJMSMessageID()} has been sent by the RemoteServiceCaller.")
-      
       // Wait until the reply has been received from the server
       //latch.await()
+      
+      // Snchronous message reception handling
+      logger.debug(s"JMS Message ${jmsRequest.getJMSMessageID()} has been sent by the RemoteServiceCaller.")
+      
+      if (synchronous) {
+        val jmsResponse = responseConsumer.receive()
+        messageListener.onMessage(jmsResponse)
+      }
+
     }
     
     observer.subscribeOn(callerCtx.execCtxScheduler) //.observeOn(callerCtx.execCtxScheduler)

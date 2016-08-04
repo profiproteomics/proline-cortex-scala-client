@@ -1,7 +1,6 @@
 package fr.proline.cortex.client.service.misc
 
 import java.io.BufferedOutputStream
-
 import java.io.File
 import java.io.FileOutputStream
 
@@ -36,19 +35,39 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       ()
     }
     
-    this.executeRemoteMethod(CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME, Some(namedParams), Some(requestAnnotator) ).map { bytesMessage =>
+    val bytesMessageObservable = this.executeRemoteMethod(
+      CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME,
+      Some(namedParams),
+      Some(requestAnnotator)
+    )
+    //.observeOn(rx.lang.scala.schedulers.ExecutionContextScheduler(scala.concurrent.ExecutionContext.Implicits.global))
+    
+    bytesMessageObservable.map { bytesMessage =>
+       
       val outputFile = new File(localFilePath)
       val fileOutputStream = new FileOutputStream(outputFile)
       val bufferedOutput = new BufferedOutputStream(fileOutputStream)
-                      
-      // This will block until the entire content is saved on disk
-      bytesMessage.setObjectProperty(HornetQJMSConstants.JMS_HORNETQ_SAVE_STREAM, bufferedOutput)
+
+      logger.debug("Reading bytes")
+      
+      try {
+        // This will block until the entire content is saved on disk
+        bytesMessage.setObjectProperty(HornetQJMSConstants.JMS_HORNETQ_SAVE_STREAM, bufferedOutput)
+      } finally {
+        // Close resources
+        bufferedOutput.close()
+        fileOutputStream.close()
+      }
+      
+      logger.debug("Reading bytes finished")
       
       // This won't wait the stream to finish. We need to keep the consumer active.
       //bytesMessage.setObjectProperty("JMS_HQ_OutputStream", bufferedOutput)
       
+      // Return the output File
       outputFile
     }
-  }
+  
+  } // end of download method
   
 }
