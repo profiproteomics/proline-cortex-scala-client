@@ -5,9 +5,8 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with IRegisterRawFileService {
   
@@ -19,7 +18,7 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with 
     mzdbFilePath: Option[String],
     instrumentId: Long,
     ownerId: Long
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RAW_FILE_IDENTIFIER_PARAM, rawFileIdentifier)

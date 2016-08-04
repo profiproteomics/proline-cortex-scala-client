@@ -6,9 +6,8 @@ import fr.profi.util.primitives.toLong
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSetsServiceV2_0 {
   
@@ -16,7 +15,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
     projectId: Long,
     resultSetIds: Seq[Long],
     additionMode: Option[Boolean]
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
     
     import MERGE_RESULT_SETS_METHOD._
     
@@ -32,7 +31,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
     projectId: Long,
     resultSummaryIds: Seq[Long],
     additionMode: Option[Boolean]
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[RSMMergeResult] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[RSMMergeResult] = {
     
     import MERGE_RESULT_SUMMARIES_METHOD._
     

@@ -24,12 +24,12 @@ abstract class AbstractBinaryDataServiceCaller extends AbstractJSONRPC2ServiceCa
     methodName: String,
     namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit]
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[BytesMessage] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[BytesMessage] = {
     
     val newJmsContext = callerCtx.jmsContext.createContext(callerCtx.jmsContext.getSessionMode)
     val localCallerContext = BuildRemoteServiceCallerContext()(newJmsContext)
     
-    val bytesMessageObservable = super.executeRemoteMethod[BytesMessage](
+    val remoteServiceExchange = super.executeRemoteMethod[BytesMessage](
       methodName,
       namedParams,
       annotateRequest,
@@ -37,9 +37,11 @@ abstract class AbstractBinaryDataServiceCaller extends AbstractJSONRPC2ServiceCa
       synchronous = true
     )(localCallerContext)
     
-    bytesMessageObservable.doAfterTerminate {
-      localCallerContext.close()
-    }
+    remoteServiceExchange.newResult( 
+      remoteServiceExchange.result.doAfterTerminate {
+        localCallerContext.close()
+      }
+    )
   }
   
   /**

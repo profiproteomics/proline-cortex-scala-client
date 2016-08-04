@@ -5,15 +5,14 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object DeleteOrphanData extends AbstractRemoteProcessingServiceCaller[Boolean] with IDeleteOrphanDataService {
   
   import this.PROCESS_METHOD._
   
-  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
@@ -22,7 +21,7 @@ object DeleteOrphanData extends AbstractRemoteProcessingServiceCaller[Boolean] w
     this.runService( Some(namedParams) )
   }
   
-  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

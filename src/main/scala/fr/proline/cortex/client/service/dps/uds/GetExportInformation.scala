@@ -5,15 +5,14 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object GetExportInformation extends AbstractRemoteProcessingServiceCaller[String] with IGetExportInformationService {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
+  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[String] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

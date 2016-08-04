@@ -13,10 +13,9 @@ import org.hornetq.api.jms.HornetQJMSConstants
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
 import fr.proline.cortex.client.AbstractBinaryDataServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.util.JMSConstants
-
-import rx.lang.scala.Observable
 
 object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
   
@@ -24,7 +23,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
   val serviceVersion = "1.0"
   val methodDefinitions = Seq()
   
-  def download(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[File] = {
+  def download(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[File] = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()
@@ -35,14 +34,13 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       ()
     }
     
-    val bytesMessageObservable = this.executeRemoteMethod(
+    val bytesMessageExchange = this.executeRemoteMethod(
       CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME,
       Some(namedParams),
       Some(requestAnnotator)
     )
-    //.observeOn(rx.lang.scala.schedulers.ExecutionContextScheduler(scala.concurrent.ExecutionContext.Implicits.global))
     
-    bytesMessageObservable.map { bytesMessage =>
+    val newObservable = bytesMessageExchange.result.map { bytesMessage =>
        
       val outputFile = new File(localFilePath)
       val fileOutputStream = new FileOutputStream(outputFile)
@@ -67,6 +65,8 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       // Return the output File
       outputFile
     }
+    
+    bytesMessageExchange.newResult(newObservable)
   
   } // end of download method
   

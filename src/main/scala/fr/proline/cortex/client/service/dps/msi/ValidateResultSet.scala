@@ -6,9 +6,8 @@ import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.IRemoteServiceConfig
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 case class ValidateResultSetConfig(
   resultSetId: Long,
@@ -42,7 +41,7 @@ object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long] wit
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

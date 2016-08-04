@@ -49,15 +49,17 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
   /**
    * Call the remote service by sending a JMS request (Message) and waiting for a JMS response (Message).
    * If the JMS response is null then an Exception is thrown.
-   * Else the JMS response is parsed using the ''parseRemoteServiceResponse'' method.
+   * Else the JMS response is parsed using the ''emitRemoteServiceResponse'' method.
    */
-  protected def callRemoteService(jmsRequest: Message, synchronous: Boolean)(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
+  protected def callRemoteService(jmsRequest: Message, synchronous: Boolean)(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[T]) = {
     
     // Add some header properties to target the appropriate service and its corresponding version 
     jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
     jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_VERSION_KEY, serviceVersion)
     
-    val observer = Observable[T] { suscriber =>
+    val promise = scala.concurrent.Promise[Message]()
+    
+    val observable = Observable[T] { suscriber =>
       
       val startingTime = System.currentTimeMillis()
       
@@ -149,6 +151,8 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       // Snchronous message reception handling
       logger.debug(s"JMS Message ${jmsRequest.getJMSMessageID()} has been sent by the RemoteServiceCaller.")
       
+      promise.success(jmsRequest)
+      
       if (synchronous) {
         val jmsResponse = responseConsumer.receive()
         messageListener.onMessage(jmsResponse)
@@ -156,7 +160,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
 
     }
     
-    observer.subscribeOn(callerCtx.execCtxScheduler) //.observeOn(callerCtx.execCtxScheduler)
+    (promise.future, observable.subscribeOn(callerCtx.execCtxScheduler)) //.observeOn(callerCtx.execCtxScheduler)
   }
   
   /**

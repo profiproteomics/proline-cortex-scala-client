@@ -85,7 +85,7 @@ private [this] class ServiceNotificationListener(
 
   override def onMessage(jmsMessage: Message) {
     logger.debug(s"Notification Listener receiving message ${jmsMessage.getJMSMessageID }")
-    logger.trace(s"Content of message ${jmsMessage.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsMessage) )
+    logger.debug(s"Content of message ${jmsMessage.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsMessage) )
 
     if (callback.isEmpty) return
     

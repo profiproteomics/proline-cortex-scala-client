@@ -5,9 +5,8 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toInt
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int] with IUpdateSpectraParamsServiceV2_0 {
   
@@ -17,7 +16,7 @@ object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int] wi
     projectId: Long,
     resultSetIds: Seq[Long],
     peaklistSoftwareId: Long
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Int] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Int] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

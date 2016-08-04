@@ -3,17 +3,14 @@ package fr.proline.cortex.client.service.misc
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.file.Files
-
 import javax.jms.TextMessage
-
 import scala.collection.mutable.HashMap
-
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
 import fr.proline.cortex.client.AbstractByteStreamServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.util.JMSConstants
-
 import rx.lang.scala.Observable
 
 object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService {
@@ -22,7 +19,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
   val serviceVersion = "1.0"
   val methodDefinitions = Seq()
   
-  def getBytes(remoteFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[ByteBuffer] = {
+  def getBytes(remoteFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[ByteBuffer] = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()
@@ -36,7 +33,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
     this.executeRemoteMethod(CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME, Some(namedParams), Some(messageAnnotator) )
   }
   
-  def downloadToFile(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[File] = {
+  def downloadToFile(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[File] = {
     
     val file = new File(localFilePath)
     
@@ -44,10 +41,12 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
     options.add(java.nio.file.StandardOpenOption.APPEND)
     options.add(java.nio.file.StandardOpenOption.CREATE)
     val seekableByteChannel = Files.newByteChannel(file.toPath(), options)
+    
+    val bytesMessageExchange = this.getBytes(remoteFilePath, serverNodeId)
 
     val observableFile = Observable[File] { suscriber =>
       
-      this.getBytes(remoteFilePath, serverNodeId).doAfterTerminate { () =>
+      bytesMessageExchange.result.doAfterTerminate { () =>
         seekableByteChannel.close()
       }.subscribe(
         onNext = { byteBuffer: ByteBuffer => 
@@ -64,7 +63,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
       
     }
     
-    observableFile
+    bytesMessageExchange.newResult(observableFile)
   }
   
 }

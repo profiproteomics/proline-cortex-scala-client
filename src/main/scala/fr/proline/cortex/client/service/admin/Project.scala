@@ -5,15 +5,14 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.admin.ICreateProjectService
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object Project extends AbstractRemoteProcessingServiceCaller[Long] with ICreateProjectService {
   
   import this.PROCESS_METHOD._
   
-  def create(name: String, description: Option[String], ownerId: Long)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  def create(name: String, description: Option[String], ownerId: Long)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(NAME_PARAM, name)

@@ -3,6 +3,7 @@ package fr.proline.cortex.client.service.admin
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.admin.IGetConnectionTemplateService
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.repository.AbstractDatabaseConnector
 
@@ -16,7 +17,7 @@ object Database extends AbstractRemoteProcessingServiceCaller[Map[String, Object
     AbstractDatabaseConnector.PERSISTENCE_JDBC_USER_KEY
   )
   
-  def getConnectionTemplate()(implicit callerCtx: RemoteServiceCallerContext): Observable[Map[String, Object]] = {
+  def getConnectionTemplate()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Map[String, Object]] = {
     this.runService()
   }
   
@@ -48,7 +49,7 @@ object Database extends AbstractRemoteProcessingServiceCaller[Map[String, Object
     login: String,
     passwordHash: String,
     publicKey: String
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[String] = {
     UserAccount.getDatabasePassword(login, passwordHash, publicKey)
   }
     

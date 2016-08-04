@@ -5,13 +5,12 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives._
 import fr.proline.cortex.api.service.admin.IUserAccountService
 import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountService {
   
-  def create(login: String, passwordHash: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  def create(login: String, passwordHash: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(CREATE_METHOD.LOGIN_PARAM, login)
@@ -20,7 +19,7 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
     this.executeRemoteMethod(CREATE_METHOD.name, Some(namedParams), None, toLong )
   }
   
-  def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String)(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(CHANGE_PASSWORD_METHOD.LOGIN_PARAM, login)
@@ -33,7 +32,7 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
   def authenticate(
     login: String,
     passwordHash: String
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Boolean] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(AUTHENTICATE_METHOD.LOGIN_PARAM, login)
@@ -48,7 +47,7 @@ object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountServic
     login: String,
     passwordHash: String,
     publicKey: String
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[String] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[String] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(AUTHENTICATE_METHOD.LOGIN_PARAM, login)

@@ -7,9 +7,8 @@ import fr.proline.core.om.model.msq.SimplifiedExperimentalDesign
 import fr.proline.cortex.api.service.dps.msq._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.IRemoteServiceConfig
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
-import rx.lang.scala.Observable
 
 case class QuantifySCConfig(
   name: String,
@@ -42,7 +41,7 @@ object QuantifySC extends AbstractRemoteProcessingServiceCaller[Map[String,Any]]
   def apply(
     projectId: Long,
     config: QuantifySCConfig
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Map[String,Any]] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Map[String,Any]] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

@@ -8,6 +8,7 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
+import fr.proline.cortex.client.RemoteServiceExchange
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.cortex.client.service.misc.RemoteFile
 import fr.proline.jms.util.JMSConstants
@@ -26,7 +27,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     fileName: Option[String] = None,
     fileDirectory: Option[String] = None,
     extraParams: Option[Map[String, Any]] = None
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Array[String]] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[String]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
@@ -58,7 +59,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     fileFormat: FileFormat.Value,
     extraParams: Option[Map[String, Any]],
     localFileDirectory: String
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[File] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[File] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
@@ -66,19 +67,23 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     namedParams.put(OUTPUT_MODE_PARAM, OutputMode.STREAM.toString)
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)
     
-    this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertStreamModeResult ).flatMap { resultMap =>
+    val exchange = this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertStreamModeResult )
+    
+    val newObservable = exchange.result.flatMap { resultMap =>
       val prolineNodeId = resultMap(JMSConstants.PROLINE_NODE_ID_KEY).asInstanceOf[String]
       val filePaths = resultMap("file_paths").asInstanceOf[List[String]]
       
       val observableFiles = filePaths.map { filePath =>
         val localFilePath = localFileDirectory + '/' + new File(filePath).getName
         
-        RemoteFile.download(filePath, localFilePath, prolineNodeId)
+        RemoteFile.download(filePath, localFilePath, prolineNodeId).result
         //RemoteResource.downloadToFile(filePath, localFilePath, prolineNodeId)
       }
       
       Observable.from(observableFiles).concat
     }
+    
+    exchange.newResult(newObservable)
   }
   
   // Stolen from Database service => TODO: create an utility for this kind of parsing

@@ -21,7 +21,7 @@ abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2
    */
   def runService(
     namedParams: Option[HashMap[String,Any]] = None
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[T] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[T] = {
     executeRemoteMethod(CortexConstants.PROLINE_PROCESS_METHOD_NAME, namedParams, None, convertResponseResult)
   }
   
