@@ -5,7 +5,7 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Long] with IImportValidateGenerateSMService {
@@ -25,7 +25,7 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
     generateSpectrumMatches: Option[Boolean] = None,
     forceInsert: Option[Boolean] = None
     
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     

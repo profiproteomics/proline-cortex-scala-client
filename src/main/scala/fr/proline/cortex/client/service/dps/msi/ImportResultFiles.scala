@@ -6,7 +6,7 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.msi.ImportResultFilesServiceV2_0.{ ImportedResultFile => ResultFile }
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.IRemoteServiceConfig
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
@@ -35,7 +35,7 @@ object ImportResultFiles extends AbstractRemoteProcessingServiceCaller[Array[Res
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[ResultFile]] = {
+  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[ResultFile]] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)

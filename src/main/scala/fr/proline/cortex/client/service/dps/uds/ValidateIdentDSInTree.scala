@@ -7,7 +7,7 @@ import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 case class ValidateIdentDSInTreeConfig(
@@ -43,7 +43,7 @@ object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long] wit
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateIdentDSInTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
+  def apply(projectId: Long, config: ValidateIdentDSInTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

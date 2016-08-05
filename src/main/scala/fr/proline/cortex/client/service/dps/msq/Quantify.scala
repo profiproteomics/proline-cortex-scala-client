@@ -7,7 +7,7 @@ import fr.proline.core.om.model.msq.ExperimentalDesign
 import fr.proline.cortex.api.service.dps.msq._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 case class QuantifyConfig(
@@ -39,7 +39,7 @@ object Quantify extends AbstractRemoteProcessingServiceCaller[Long] with IQuanti
   def apply(
     projectId: Long,
     config: QuantifyConfig
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Long] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

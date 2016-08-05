@@ -7,12 +7,12 @@ import fr.profi.util.primitives._
 import fr.proline.cortex.api.fs._
 import fr.proline.cortex.api.service.misc.IFileSystemService
 import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService {
   
-  def getAllDirectoryTypes()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[String]] = {
+  def getAllDirectoryTypes()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[String]] = {
     this.executeRemoteMethod(RETRIEVE_ALL_DIRECTORY_TYPES_METHOD.name, None, None, convertResponseToStrings)
   }
   
@@ -30,11 +30,11 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     
   }
   
-  def getAllMountPoints()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
+  def getAllMountPoints()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[MountPoint]] = {
     this.executeRemoteMethod(RETRIEVE_ALL_MOUNT_POINTS_METHOD.name, None, None, convertResponseToMountPoints )
   }
   
-  def findMountPointsByType(directoryType: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
+  def findMountPointsByType(directoryType: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[MountPoint]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RETRIEVE_MOUNT_POINTS_BY_TYPE_METHOD.DIR_TYPE_PARAM, directoryType)
@@ -42,7 +42,7 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     this.executeRemoteMethod(RETRIEVE_MOUNT_POINTS_BY_TYPE_METHOD.name, Some(namedParams), None, convertResponseToMountPoints )
   }
   
-  def findMountPointsByLabel(label: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
+  def findMountPointsByLabel(label: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[MountPoint]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RETRIEVE_MOUNT_POINTS_BY_LABEL_METHOD.LABEL_PARAM, label)
@@ -69,7 +69,7 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     includeFiles: Boolean,
     includeDirs: Boolean,
     extensionFilter: Option[String]
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[FileAttrs]] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[FileAttrs]] = {
     
     import RETRIEVE_DIRECTORY_CONTENT_METHOD._
     

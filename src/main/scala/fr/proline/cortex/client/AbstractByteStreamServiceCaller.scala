@@ -28,20 +28,20 @@ abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCa
     methodName: String,
     namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit]
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[ByteBuffer] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[ByteBuffer] = {
     
     val newJmsContext = callerCtx.jmsContext.createContext(callerCtx.jmsContext.getSessionMode)
     val localCallerContext = BuildRemoteServiceCallerContext()(newJmsContext)
     
-    val remoteServiceExchange = super.executeRemoteMethod[ByteBuffer](
+    val remoteServiceCall = super.executeRemoteMethod[ByteBuffer](
       methodName,
       namedParams,
       annotateRequest,
       _.asInstanceOf[ByteBuffer]
     )(localCallerContext)
     
-    remoteServiceExchange.newResult(
-      remoteServiceExchange.result.doAfterTerminate {
+    remoteServiceCall.newResult(
+      remoteServiceCall.result.doAfterTerminate {
         localCallerContext.close()
       }
     )

@@ -9,7 +9,7 @@ import scala.concurrent.Promise
 
 import rx.lang.scala.Observable
 
-object RemoteServiceExchange {
+object RemoteServiceCall {
   
   def messageToPropertyMap(message: Message): Map[String, Any] = {
     
@@ -39,18 +39,18 @@ object RemoteServiceExchange {
     requestPropertyByName.toMap
   }
   
-  /*def apply[T](request: Future[Message], result: Observable[T]): RemoteServiceExchange[T] = {
-    new RemoteServiceExchange(request, result)
+  /*def apply[T](request: Future[Message], result: Observable[T]): RemoteServiceCall[T] = {
+    new RemoteServiceCall(request, result)
   }*/
 }
 
-class RemoteServiceExchange[T](
+class RemoteServiceCall[T](
   val request: Future[Message],
   //val requestPropertyByName: Map[String, Any],
   val result: Observable[T]
 ) {
-  def newResult[S](newResult: Observable[S]): RemoteServiceExchange[S] = {
-    new RemoteServiceExchange(request, newResult)
+  def newResult[S](newResult: Observable[S]): RemoteServiceCall[S] = {
+    new RemoteServiceCall(request, newResult)
   }
   
   implicit def resultToFuture(): Future[T] = {

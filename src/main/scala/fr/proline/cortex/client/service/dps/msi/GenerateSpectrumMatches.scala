@@ -6,7 +6,7 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 case class GenerateSpectrumMatchesConfig(
@@ -32,7 +32,7 @@ object GenerateSpectrumMatches extends AbstractRemoteProcessingServiceCaller[Boo
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Boolean] = {
+  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

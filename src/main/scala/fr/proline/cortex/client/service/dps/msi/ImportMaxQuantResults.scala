@@ -5,7 +5,7 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 object ImportMaxQuantResults extends AbstractRemoteProcessingServiceCaller[Map[String, Any]] with IImportMaxQuantResultsService {
@@ -17,7 +17,7 @@ object ImportMaxQuantResults extends AbstractRemoteProcessingServiceCaller[Map[S
     resultFilesDir: String,
     instrumentConfigId: Long,
     peaklistSoftwareId: Long
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Map[String, Any]] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Map[String, Any]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

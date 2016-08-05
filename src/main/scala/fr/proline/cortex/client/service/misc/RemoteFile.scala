@@ -13,7 +13,7 @@ import org.hornetq.api.jms.HornetQJMSConstants
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
 import fr.proline.cortex.client.AbstractBinaryDataServiceCaller
-import fr.proline.cortex.client.RemoteServiceExchange
+import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.jms.util.JMSConstants
 
@@ -23,7 +23,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
   val serviceVersion = "1.0"
   val methodDefinitions = Seq()
   
-  def download(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[File] = {
+  def download(remoteFilePath: String, localFilePath: String, serverNodeId: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[File] = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()
@@ -34,13 +34,13 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       ()
     }
     
-    val bytesMessageExchange = this.executeRemoteMethod(
+    val bytesMessageCall = this.executeRemoteMethod(
       CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME,
       Some(namedParams),
       Some(requestAnnotator)
     )
     
-    val newObservable = bytesMessageExchange.result.map { bytesMessage =>
+    val newObservable = bytesMessageCall.result.map { bytesMessage =>
        
       val outputFile = new File(localFilePath)
       val fileOutputStream = new FileOutputStream(outputFile)
@@ -66,7 +66,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       outputFile
     }
     
-    bytesMessageExchange.newResult(newObservable)
+    bytesMessageCall.newResult(newObservable)
   
   } // end of download method
   

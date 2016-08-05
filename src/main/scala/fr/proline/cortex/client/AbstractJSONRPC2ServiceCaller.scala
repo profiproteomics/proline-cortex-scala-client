@@ -90,7 +90,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean = false
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[T] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[T] = {
     
     // Convert the namedParams to JSONRPC2Request compliant java.util.Map
     val jsonRpcRequest = new SerializableJSONRPC2Request(
@@ -108,7 +108,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
       convertResponseResult(result)
     }
     
-    new RemoteServiceExchange(futureRequest, observableConvertedResult)
+    new RemoteServiceCall(futureRequest, observableConvertedResult)
   }
   
 }
