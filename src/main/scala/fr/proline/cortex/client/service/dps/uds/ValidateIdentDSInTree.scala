@@ -39,7 +39,7 @@ case class ValidateIdentDSInTreeConfig(
   }
 }
 
-object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long] with IValidateIdentDSInTreeService {
+object ValidateIdentDSInTree extends AbstractRemoteProcessingServiceCaller[Long] with IValidateIdentDSInTreeService {
   
   import this.PROCESS_METHOD._
   
