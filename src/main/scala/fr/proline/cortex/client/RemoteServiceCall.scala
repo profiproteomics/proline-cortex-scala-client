@@ -44,7 +44,7 @@ object RemoteServiceCall {
   }*/
 }
 
-class RemoteServiceCall[T](
+class RemoteServiceCall[+T](
   val request: Future[Message],
   //val requestPropertyByName: Map[String, Any],
   val result: Observable[T]
