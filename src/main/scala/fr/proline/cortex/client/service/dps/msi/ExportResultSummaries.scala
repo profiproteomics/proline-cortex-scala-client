@@ -22,8 +22,8 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
   private val requiredKeys = Array("file_paths", JMSConstants.PROLINE_NODE_ID_KEY)
   
   def export(
-    rsmIdentifiers: Seq[RsmIdentifier],
-    fileFormat: FileFormat.Value,
+    rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
+    fileFormat: ExportFileFormat.Value,
     fileName: Option[String] = None,
     fileDirectory: Option[String] = None,
     extraParams: Option[Map[String, Any]] = None
@@ -35,7 +35,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     
     if (fileName.isDefined) namedParams.put(FILE_NAME_PARAM, fileName.get)
     if (fileDirectory.isDefined) namedParams.put(FILE_DIRECTORY_PARAM, fileDirectory.get)
-    namedParams.put(OUTPUT_MODE_PARAM, OutputMode.FILE.toString)
+    namedParams.put(OUTPUT_MODE_PARAM, ExportOutputMode.FILE.toString)
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)
     
     this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertFileModeResult )
@@ -55,8 +55,8 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
   }
   
   def exportThenDownload(
-    rsmIdentifiers: Seq[RsmIdentifier],
-    fileFormat: FileFormat.Value,
+    rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
+    fileFormat: ExportFileFormat.Value,
     extraParams: Option[Map[String, Any]],
     localFileDirectory: String
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[File] = {
@@ -64,7 +64,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
     namedParams.put(FILE_FORMAT_PARAM, fileFormat.toString)
-    namedParams.put(OUTPUT_MODE_PARAM, OutputMode.STREAM.toString)
+    namedParams.put(OUTPUT_MODE_PARAM, ExportOutputMode.STREAM.toString)
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)
     
     val serviceCall = this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertStreamModeResult )
