@@ -19,6 +19,7 @@ import rx.lang.scala.schedulers.ExecutionContextScheduler
 object BuildRemoteServiceCallerContext extends StrictLogging {
   
   def apply(
+    clientName: Option[String] = None,
     queueName: String = CortexConstants.DEFAULT_PROLINE_SERVICE_REQUEST_QUEUE_NAME
   )(implicit managedJmsContext: JMSContext): RemoteServiceCallerContext = {
     
@@ -44,6 +45,7 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
       val jmsProducer = serviceCallerJmsCtx.createProducer()
       
       new RemoteServiceCallerContext(
+        clientName,
         serviceCallerJmsCtx,
         jmsQueue,
         jmsProducer
@@ -55,6 +57,7 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
 }
 
 case class RemoteServiceCallerContext private[context](
+  val clientName: Option[String],
   val jmsContext: JMSContext,
   val jmsQueue: Queue,
   val jmsProducer: JMSProducer

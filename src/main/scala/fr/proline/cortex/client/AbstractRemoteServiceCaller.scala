@@ -1,5 +1,6 @@
 package fr.proline.cortex.client
 
+import java.net.InetAddress
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.jms._
@@ -56,6 +57,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
     // Add some header properties to target the appropriate service and its corresponding version 
     jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
     jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_VERSION_KEY, serviceVersion)
+    this.addServiceClientToMessage(jmsRequest)
     
     val promise = scala.concurrent.Promise[Message]()
     
@@ -161,6 +163,15 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
     }
     
     (promise.future, observable.subscribeOn(callerCtx.execCtxScheduler)) //.observeOn(callerCtx.execCtxScheduler)
+  }
+
+  protected def addServiceClientToMessage(message: Message)(implicit callerCtx: RemoteServiceCallerContext): Unit = {
+
+    val clientName = callerCtx.clientName.getOrElse("UNKNWON")
+    val ipAddress = InetAddress.getLocalHost().getHostAddress()
+    val source = s"Client '$clientName' hosted by '$ipAddress'"
+
+    message.setStringProperty(JMSConstants.PROLINE_SERVICE_SOURCE_KEY, source)
   }
   
   /**
