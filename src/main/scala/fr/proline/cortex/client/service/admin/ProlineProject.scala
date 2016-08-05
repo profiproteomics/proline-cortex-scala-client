@@ -8,7 +8,7 @@ import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
-object Project extends AbstractRemoteProcessingServiceCaller[Long] with ICreateProjectService {
+object ProlineProject extends AbstractRemoteProcessingServiceCaller[Long] with ICreateProjectService {
   
   import this.PROCESS_METHOD._
   

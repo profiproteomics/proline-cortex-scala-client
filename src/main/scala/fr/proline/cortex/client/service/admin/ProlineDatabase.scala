@@ -9,7 +9,7 @@ import fr.proline.repository.AbstractDatabaseConnector
 
 import rx.lang.scala.Observable
 
-object Database extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
+object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
   
   private val requiredKeys = Array(
     AbstractDatabaseConnector.PERSISTENCE_JDBC_DRIVER_KEY,

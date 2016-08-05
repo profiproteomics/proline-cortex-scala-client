@@ -8,7 +8,7 @@ import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
 import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
-object UserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountService {
+object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller with IUserAccountService {
   
   def create(login: String, passwordHash: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
