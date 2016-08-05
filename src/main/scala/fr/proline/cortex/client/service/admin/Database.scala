@@ -45,7 +45,7 @@ object Database extends AbstractRemoteProcessingServiceCaller[Map[String, Object
   
   // Expose the method defined in the UserAccount service
   // TODO: define the same API server side or add login/passwordHash params to the getConnectionTemplate method
-  def getPassword(
+  def getEncryptedPassword(
     login: String,
     passwordHash: String,
     publicKey: String

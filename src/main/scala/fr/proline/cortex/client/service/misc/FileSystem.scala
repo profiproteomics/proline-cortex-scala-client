@@ -12,7 +12,7 @@ import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService {
   
-  def retrieveAllDirectoryTypes()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[String]] = {
+  def getAllDirectoryTypes()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[String]] = {
     this.executeRemoteMethod(RETRIEVE_ALL_DIRECTORY_TYPES_METHOD.name, None, None, convertResponseToStrings)
   }
   
@@ -30,11 +30,11 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     
   }
   
-  def retrieveAllMountPoints()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
+  def getAllMountPoints()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
     this.executeRemoteMethod(RETRIEVE_ALL_MOUNT_POINTS_METHOD.name, None, None, convertResponseToMountPoints )
   }
   
-  def retrieveMountPointsByType(directoryType: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
+  def findMountPointsByType(directoryType: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RETRIEVE_MOUNT_POINTS_BY_TYPE_METHOD.DIR_TYPE_PARAM, directoryType)
@@ -42,7 +42,7 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     this.executeRemoteMethod(RETRIEVE_MOUNT_POINTS_BY_TYPE_METHOD.name, Some(namedParams), None, convertResponseToMountPoints )
   }
   
-  def retrieveMountPointsByLabel(label: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
+  def findMountPointsByLabel(label: String)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[MountPoint]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RETRIEVE_MOUNT_POINTS_BY_LABEL_METHOD.LABEL_PARAM, label)
@@ -63,11 +63,11 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     
   }
   
-  def retrieveDirectoryContent(
+  def getDirectoryContent(
     labelPath: String,
-    directoryType: Option[String],
-    includeFiles: Long,
-    includeDirs: Long,
+    //directoryType: Option[String],
+    includeFiles: Boolean,
+    includeDirs: Boolean,
     extensionFilter: Option[String]
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceExchange[Array[FileAttrs]] = {
     
@@ -75,7 +75,7 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(LABEL_PATH_PARAM, labelPath)
-    if (directoryType.isDefined) namedParams.put(DIRECTORY_TYPE_PARAM, directoryType.get)
+    //if (directoryType.isDefined) namedParams.put(DIRECTORY_TYPE_PARAM, directoryType.get)
     namedParams.put(INCLUDE_FILES_PARAM, includeFiles)
     namedParams.put(INCLUDE_DIRS_PARAM, includeDirs)
     if (extensionFilter.isDefined) namedParams.put(EXTENSION_FILTER_PARAM, extensionFilter)

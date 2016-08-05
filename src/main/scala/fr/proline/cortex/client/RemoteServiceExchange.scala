@@ -5,6 +5,7 @@ import javax.jms.MessageHeader.Header
 
 import scala.collection.mutable.HashMap
 import scala.concurrent.Future
+import scala.concurrent.Promise
 
 import rx.lang.scala.Observable
 
@@ -50,6 +51,21 @@ class RemoteServiceExchange[T](
 ) {
   def newResult[S](newResult: Observable[S]): RemoteServiceExchange[S] = {
     new RemoteServiceExchange(request, newResult)
+  }
+  
+  implicit def resultToFuture(): Future[T] = {
+    val promise = Promise[T]
+
+    result.subscribe(
+      onNext = { result: T => 
+        promise.success(result)
+      },
+      onError = { error: Throwable =>
+        promise.failure(error)
+      }
+    )
+
+    promise.future
   }
   
 }
