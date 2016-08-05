@@ -40,7 +40,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       Some(requestAnnotator)
     )
     
-    val newObservable = bytesMessageCall.result.map { bytesMessage =>
+    bytesMessageCall.map { bytesMessage =>
        
       val outputFile = new File(localFilePath)
       val fileOutputStream = new FileOutputStream(outputFile)
@@ -65,8 +65,6 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
       // Return the output File
       outputFile
     }
-    
-    bytesMessageCall.newResult(newObservable)
   
   } // end of download method
   

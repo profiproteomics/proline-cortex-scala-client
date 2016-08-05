@@ -49,6 +49,11 @@ class RemoteServiceCall[T](
   //val requestPropertyByName: Map[String, Any],
   val result: Observable[T]
 ) {
+  
+  def map[S](f: T => S): RemoteServiceCall[S] = newResult(mapResult(f))
+  
+  def mapResult[S](f: T => S): Observable[S] = result.map { f }
+  
   def newResult[S](newResult: Observable[S]): RemoteServiceCall[S] = {
     new RemoteServiceCall(request, newResult)
   }
@@ -64,7 +69,7 @@ class RemoteServiceCall[T](
         promise.failure(error)
       }
     )
-
+    
     promise.future
   }
   
