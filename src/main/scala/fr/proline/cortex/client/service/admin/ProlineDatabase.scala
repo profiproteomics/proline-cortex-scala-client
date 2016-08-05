@@ -50,7 +50,7 @@ object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String,
     passwordHash: String,
     publicKey: String
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[String] = {
-    UserAccount.getDatabasePassword(login, passwordHash, publicKey)
+    ProlineUserAccount.getDatabasePassword(login, passwordHash, publicKey)
   }
     
 }
