@@ -10,7 +10,7 @@ import fr.proline.cortex.client.IRemoteServiceConfig
 import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
-case class ValidateIdentDSInTreeConfig(
+case class ValidateIdentDSTreeConfig(
   parentDatasetIds: Array[Long],
   mergeResultSets: Boolean,
   useTdCompetition: Option[Boolean],
@@ -39,11 +39,11 @@ case class ValidateIdentDSInTreeConfig(
   }
 }
 
-object ValidateIdentDSInTree extends AbstractRemoteProcessingServiceCaller[Long] with IValidateIdentDSInTreeService {
+object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Long] with IValidateIdentDSInTreeService {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateIdentDSInTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)
