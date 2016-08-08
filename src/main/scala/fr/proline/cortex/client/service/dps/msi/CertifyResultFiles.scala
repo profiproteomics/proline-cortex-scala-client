@@ -12,7 +12,7 @@ object CertifyResultFiles extends AbstractRemoteProcessingServiceCaller[Boolean]
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptor], importerProperties: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
+  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

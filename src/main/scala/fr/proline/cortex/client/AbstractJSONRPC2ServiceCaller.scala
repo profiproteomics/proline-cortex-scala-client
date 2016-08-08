@@ -6,12 +6,17 @@ import javax.jms.Message
 import javax.jms.TextMessage
 
 import scala.collection.mutable.HashMap
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
 
+import fr.profi.util.concurrent.ObservableUtils
 import fr.profi.util.jsonrpc.SerializableJSONRPC2Request
-import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 import rx.lang.scala.Observable
@@ -92,6 +97,31 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     synchronous: Boolean = false
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[T] = {
     
+    val (futureRequest, observableConvertedResult) = this.observeRemoteMethodResult(
+      methodName,
+      namedParams,
+      annotateRequest,
+      convertResponseResult,
+      synchronous
+    )
+    
+    new RemoteServiceCall(futureRequest, ObservableUtils.observableToFuture(observableConvertedResult))
+  }
+  
+  /**
+   * Execute the remote JSON-RPC method and wait for the response.
+   * @param methodName The name of the method to execute remotely.
+   * @param namedParameters A Map of named parameters that will be sent in the request.
+   * @param convertResponseResult A function used to convert the response from AnyRef to generic T type.
+   */
+  protected def observeRemoteMethodResult[T](
+    methodName: String,
+    namedParams: Option[HashMap[String,Any]],
+    annotateRequest: Option[TextMessage => Unit],
+    convertResponseResult: AnyRef => T,
+    synchronous: Boolean
+  )(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[T]) = {
+    
     // Convert the namedParams to JSONRPC2Request compliant java.util.Map
     val jsonRpcRequest = new SerializableJSONRPC2Request(
       id = AbstractJSONRPC2ServiceCaller.newJsonRequestId(),
@@ -108,7 +138,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
       convertResponseResult(result)
     }
     
-    new RemoteServiceCall(futureRequest, observableConvertedResult)
+    (futureRequest, observableConvertedResult)
   }
   
 }

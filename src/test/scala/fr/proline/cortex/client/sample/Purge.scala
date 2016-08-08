@@ -78,9 +78,9 @@ object Purge extends StrictLogging {
       val consumer = session.createConsumer(queue, selectorString)
 
       /*
-	     * ReplyProducer to send JMS Response Message to Client (Producer MUST be confined in current
-	     * Thread)
-	     */
+       * ReplyProducer to send JMS Response Message to Client (Producer MUST be confined in current
+       * Thread)
+       */
       val replyProducer = session.createProducer(null)
 
       connection.start() // Explicitely start connection to begin Consumer reception

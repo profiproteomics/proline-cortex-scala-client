@@ -4,6 +4,8 @@ import java.io.File
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
@@ -12,8 +14,6 @@ import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 import fr.proline.cortex.client.service.misc.RemoteFile
 import fr.proline.jms.util.JMSConstants
-
-import rx.lang.scala.Observable
 
 object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportResultSummariesServiceV2_0 {
   
@@ -59,7 +59,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     fileFormat: ExportFileFormat.Value,
     extraParams: Option[Map[String, Any]],
     localFileDirectory: String
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[File] = {
+  )(implicit callerCtx: RemoteServiceCallerContext, ec: ExecutionContext): RemoteServiceCall[List[File]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
@@ -69,21 +69,21 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     
     val serviceCall = this.executeRemoteMethod(PROCESS_METHOD.name, Some(namedParams), None, convertStreamModeResult )
     
-    val newObservable = serviceCall.result.flatMap { resultMap =>
+    val newFuture = serviceCall.result.flatMap { resultMap =>
       val prolineNodeId = resultMap(JMSConstants.PROLINE_NODE_ID_KEY).asInstanceOf[String]
       val filePaths = resultMap("file_paths").asInstanceOf[List[String]]
       
-      val observableFiles = filePaths.map { filePath =>
+      val futureFiles = filePaths.map { filePath =>
         val localFilePath = localFileDirectory + '/' + new File(filePath).getName
         
         RemoteFile.download(filePath, localFilePath, prolineNodeId).result
         //RemoteResource.downloadToFile(filePath, localFilePath, prolineNodeId)
       }
       
-      Observable.from(observableFiles).concat
+      Future.sequence(futureFiles)
     }
     
-    serviceCall.newResult(newObservable)
+    serviceCall.newResult(newFuture)
   }
   
   // Stolen from Database service => TODO: create an utility for this kind of parsing

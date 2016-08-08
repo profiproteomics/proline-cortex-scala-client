@@ -4,10 +4,8 @@ import javax.jms.Message
 import javax.jms.MessageHeader.Header
 
 import scala.collection.mutable.HashMap
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.concurrent.Promise
-
-import rx.lang.scala.Observable
 
 object RemoteServiceCall {
   
@@ -39,38 +37,18 @@ object RemoteServiceCall {
     requestPropertyByName.toMap
   }
   
-  /*def apply[T](request: Future[Message], result: Observable[T]): RemoteServiceCall[T] = {
-    new RemoteServiceCall(request, result)
-  }*/
 }
 
 class RemoteServiceCall[+T](
   val request: Future[Message],
-  //val requestPropertyByName: Map[String, Any],
-  val result: Observable[T]
+  val result: Future[T]
 ) {
   
-  def map[S](f: T => S): RemoteServiceCall[S] = newResult(mapResult(f))
+  def map[S](f: T => S)(implicit ec: ExecutionContext): RemoteServiceCall[S] = newResult(mapResult(f)(ec))
   
-  def mapResult[S](f: T => S): Observable[S] = result.map { f }
+  def mapResult[S](f: T => S)(implicit ec: ExecutionContext): Future[S] = result.map { f }
   
-  def newResult[S](newResult: Observable[S]): RemoteServiceCall[S] = {
+  def newResult[S](newResult: Future[S]): RemoteServiceCall[S] = {
     new RemoteServiceCall(request, newResult)
   }
-  
-  implicit def resultToFuture(): Future[T] = {
-    val promise = Promise[T]
-
-    result.subscribe(
-      onNext = { result: T => 
-        promise.success(result)
-      },
-      onError = { error: Throwable =>
-        promise.failure(error)
-      }
-    )
-    
-    promise.future
-  }
-  
 }

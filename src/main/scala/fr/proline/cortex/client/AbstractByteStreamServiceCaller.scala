@@ -1,18 +1,16 @@
 package fr.proline.cortex.client
 
 import java.nio.ByteBuffer
-
 import javax.jms.BytesMessage
 import javax.jms.Message
 import javax.jms.TextMessage
-
 import scala.collection.mutable.HashMap
-
+import fr.profi.util.concurrent.ObservableUtils
 import fr.proline.cortex.client.context.BuildRemoteServiceCallerContext
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
-
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscriber
+import scala.concurrent.Future
 
 abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCaller {
   
@@ -24,27 +22,28 @@ abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCa
    * @param namedParameters A Map of named parameters that will be sent in the request.
    * @param convertResponseResult A function used to convert the response from AnyRef to generic T type.
    */
-  def executeRemoteMethod(
+  def observeRemoteMethodResult(
     methodName: String,
     namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit]
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[ByteBuffer] = {
+  )(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
     
     val newJmsContext = callerCtx.jmsContext.createContext(callerCtx.jmsContext.getSessionMode)
     val localCallerContext = BuildRemoteServiceCallerContext()(newJmsContext)
     
-    val remoteServiceCall = super.executeRemoteMethod[ByteBuffer](
+    val (futureRequest, observableConvertedResult) = super.observeRemoteMethodResult[ByteBuffer](
       methodName,
       namedParams,
       annotateRequest,
-      _.asInstanceOf[ByteBuffer]
+      _.asInstanceOf[ByteBuffer],
+      synchronous = true
     )(localCallerContext)
     
-    remoteServiceCall.newResult(
-      remoteServiceCall.result.doAfterTerminate {
-        localCallerContext.close()
-      }
-    )
+    val safeObservable = observableConvertedResult.doAfterTerminate {
+      localCallerContext.close()
+    }
+    
+    (futureRequest, safeObservable)
   }
   
   /**

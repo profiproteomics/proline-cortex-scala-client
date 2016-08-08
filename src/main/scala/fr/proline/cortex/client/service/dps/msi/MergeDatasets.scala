@@ -14,7 +14,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
   def mergeResultSets(
     projectId: Long,
     resultSetIds: Seq[Long],
-    additionMode: Option[Boolean]
+    additionMode: Option[String] // TODO: move AdditionMode from OMP to OM
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
     import MERGE_RESULT_SETS_METHOD._
@@ -30,7 +30,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
   def mergeResultSummaries(
     projectId: Long,
     resultSummaryIds: Seq[Long],
-    additionMode: Option[Boolean]
+    additionMode: Option[String]
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[RSMMergeResult] = {
     
     import MERGE_RESULT_SUMMARIES_METHOD._

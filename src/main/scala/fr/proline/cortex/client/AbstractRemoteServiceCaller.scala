@@ -91,7 +91,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
               
               if (jmsResponse != null) {
                 logger.debug(s"Received message #$messageNumber ${jmsResponse.getJMSMessageID} from remote service '$serviceName'")
-                logger.debug(s"Content of message ${jmsResponse.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsResponse) )
+                logger.trace(s"Content of message ${jmsResponse.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsResponse) )
             
                 emitRemoteServiceResponse(jmsResponse, suscriber)
                 
