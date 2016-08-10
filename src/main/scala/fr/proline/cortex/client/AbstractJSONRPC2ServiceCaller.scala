@@ -1,10 +1,12 @@
 package fr.proline.cortex.client
 
 import java.util.concurrent.atomic.AtomicLong
+import java.util.regex.Pattern
 
 import javax.jms.Message
 import javax.jms.TextMessage
 
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -67,12 +69,22 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     val jsonError = jsonResponse.getError()
     
     if (jsonError != null) {
-      logger.error(
-        s"Error while executing '$serviceName' service: " +
-        s"JSON Error code ${jsonError.getCode()}, message: ${jsonError.getMessage()}"
-      )
+      
+      val errData = jsonError.getData
+      if (errData != null) {
+        try {
+          // FIXME: return the stack trace as an array of strings (StackTraceElement case class ???)
+          val stackTrace = jsonError.getData.toString.split("\r\n").map( _parseStackTraceElement )
+          jsonError.setStackTrace(stackTrace)
+        } catch {
+          case t: Throwable => {
+            logger.error("Can't set the stack trace of the JSONRPC2Error", t)
+          }
+        }
+      }
       
       throw jsonError
+      
     } else {
       if (responseLength <= MAX_LOGGING_RESPONSE_LENGTH) {
         logger.debug(s"JSON response result from service '$serviceName': " + jsonResponse.getResult())
@@ -81,6 +93,22 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     
     // Emit the response
     responseSuscriber.onNext(jsonResponse.getResult)
+  }
+  
+  // TODO: put in dedicated util class
+  private def _parseStackTraceElement(traceElemAsStr: String): StackTraceElement = {
+    
+    if (traceElemAsStr.endsWith("(Unknown Source)")) {
+      val TraceExtractor = """(.+)\.(.+)\(.+""".r
+      val TraceExtractor(className, methodName) = traceElemAsStr
+      new StackTraceElement(className, methodName,null, -1)
+    } else {
+      val TraceExtractor = """(.+)\.(.+)\((.+):(\d+)\)""".r
+      val TraceExtractor(className, methodName, sourceFile, lineNum) = traceElemAsStr
+      
+      new StackTraceElement(className, methodName,sourceFile, lineNum.toInt)
+    }
+
   }
   
   /**

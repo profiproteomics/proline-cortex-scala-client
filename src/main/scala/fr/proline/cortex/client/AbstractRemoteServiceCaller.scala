@@ -65,8 +65,8 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       
       val startingTime = System.currentTimeMillis()
       
-      val requestType = if (synchronous) "synchronous" else "asynchronous"
-      logger.info(s"RemoteServiceCaller will send a $requestType JMS request for service '$serviceName'")
+      val requestType = if (synchronous) "a synchronous" else "an asynchronous"
+      logger.info(s"RemoteServiceCaller will send $requestType JMS request for service '$serviceName'")
       
       //val latch = new CountDownLatch(1)
       
@@ -107,8 +107,11 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
                 throw new Exception(errorMsg)
               }
             } catch {
+              case jsonRpcError: JSONRPC2Error => {
+                suscriber.onError(jsonRpcError)
+              }
               case t: Throwable => {
-                logger.error("Error during the processing of the remote service response",t) //return Observable.error(t)
+                logger.error(s"Error during the processing of response coming from remote service '$serviceName' service",t) //return Observable.error(t)
                 suscriber.onError(t)
               }
             } finally {
