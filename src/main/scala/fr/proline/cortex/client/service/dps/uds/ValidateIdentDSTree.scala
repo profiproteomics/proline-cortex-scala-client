@@ -2,7 +2,7 @@ package fr.proline.cortex.client.service.dps.uds
 
 import scala.collection.mutable.HashMap
 
-import fr.profi.util.primitives.toLong
+import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
@@ -39,11 +39,11 @@ case class ValidateIdentDSTreeConfig(
   }
 }
 
-object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Long] with IValidateIdentDSInTreeService {
+object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Boolean] with IValidateIdentDSInTreeService {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)
@@ -51,6 +51,6 @@ object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Long] w
     this.runService( Some(namedParams) )
   }
   
-  protected def convertResponseResult(responseResult: AnyRef): Long = toLong(responseResult)
+  protected def convertResponseResult(responseResult: AnyRef): Boolean = toBoolean(responseResult)
   
 }
