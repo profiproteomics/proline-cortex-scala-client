@@ -4,7 +4,7 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.api.service.dps.msi.ImportResultFilesServiceV2_0.{ ImportedResultFile => ResultFile }
+import fr.proline.cortex.api.service.dps.msi.{ ImportedResultFile => ResultFile }
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.RemoteServiceCall
 import fr.proline.cortex.client.IRemoteServiceConfig
