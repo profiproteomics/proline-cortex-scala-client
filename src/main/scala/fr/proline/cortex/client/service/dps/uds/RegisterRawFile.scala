@@ -25,7 +25,7 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with 
     if (rawFilePath.isDefined) namedParams.put(RAW_FILE_PATH_PARAM, rawFilePath.get)
     if (mzdbFilePath.isDefined) namedParams.put(MZDB_FILE_PATH_PARAM, mzdbFilePath.get)
     namedParams.put(INSTRUMENT_ID_PARAM, instrumentId)
-    namedParams.put(OWNER_ID_PARAM, instrumentId)
+    namedParams.put(OWNER_ID_PARAM, ownerId)
     
     this.runService( Some(namedParams) )
   }
