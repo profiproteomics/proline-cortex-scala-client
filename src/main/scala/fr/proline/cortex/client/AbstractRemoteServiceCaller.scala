@@ -66,7 +66,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       val startingTime = System.currentTimeMillis()
       
       val requestType = if (synchronous) "a synchronous" else "an asynchronous"
-      logger.info(s"RemoteServiceCaller will send $requestType JMS request for service '$serviceName'")
+      logger.info(s"RemoteServiceCaller will send $requestType JMS request to service '$serviceName'")
       
       //val latch = new CountDownLatch(1)
       
