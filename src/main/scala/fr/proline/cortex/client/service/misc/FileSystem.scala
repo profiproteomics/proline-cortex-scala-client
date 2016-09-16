@@ -87,8 +87,6 @@ object FileSystem extends AbstractJSONRPC2ServiceCaller with IFileSystemService 
 
     responseResult match {
       case javaArrayList: java.util.ArrayList[_] => {
-        require( javaArrayList.isEmpty() == false, mkServiceErrorMsg("the returned list is empty !") )
-        
         ProfiJson.getObjectMapper.convertValue(javaArrayList,classOf[Array[FileAttrs]])
       }
       case _ => throw new Exception( mkServiceErrorMsg("invalid result, list of parameters expected !") )
