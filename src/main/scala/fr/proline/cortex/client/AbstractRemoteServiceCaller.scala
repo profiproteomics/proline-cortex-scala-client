@@ -45,7 +45,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
    *
    * @param jmsMessage The JMS message to parse.
    */
-  protected def emitRemoteServiceResponse(jmsMessage: Message, suscriber: Subscriber[T]): Unit
+  protected def emitRemoteServiceResponse(jmsMessage: Message, subscriber: Subscriber[T]): Unit
   
   /**
    * Call the remote service by sending a JMS request (Message) and waiting for a JMS response (Message).
@@ -61,7 +61,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
     
     val promise = scala.concurrent.Promise[Message]()
     
-    val observable = Observable[T] { suscriber =>
+    val observable = Observable[T] { subscriber =>
       
       val startingTime = System.currentTimeMillis()
       
@@ -93,7 +93,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
                 logger.debug(s"Received message #$messageNumber ${jmsResponse.getJMSMessageID} from remote service '$serviceName'")
                 logger.trace(s"Content of message ${jmsResponse.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsResponse) )
             
-                emitRemoteServiceResponse(jmsResponse, suscriber)
+                emitRemoteServiceResponse(jmsResponse, subscriber)
                 
                 // Tell to the remote server that the JMS message has been successfully consumed
                 jmsResponse.acknowledge()
@@ -108,11 +108,11 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
               }
             } catch {
               case jsonRpcError: JSONRPC2Error => {
-                suscriber.onError(jsonRpcError)
+                subscriber.onError(jsonRpcError)
               }
               case t: Throwable => {
                 logger.error(s"Error during the processing of response coming from remote service '$serviceName' service",t) //return Observable.error(t)
-                suscriber.onError(t)
+                subscriber.onError(t)
               }
             } finally {
               // Important: don't forget to close the response consumer !
@@ -134,7 +134,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
             }
             
             // Complete the subscriber
-            suscriber.onCompleted()
+            subscriber.onCompleted()
             
           } (callerCtx.execCtx)
         }

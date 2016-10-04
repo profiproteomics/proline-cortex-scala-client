@@ -150,6 +150,8 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     synchronous: Boolean
   )(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[T]) = {
     
+    logger.debug(s"Serializing JSON-RPC request for service '$serviceName' and method '$methodName'")
+    
     // Convert the namedParams to JSONRPC2Request compliant java.util.Map
     val jsonRpcRequest = new SerializableJSONRPC2Request(
       id = AbstractJSONRPC2ServiceCaller.newJsonRequestId(),
