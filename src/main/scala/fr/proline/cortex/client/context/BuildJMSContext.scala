@@ -32,7 +32,9 @@ object BuildJMSContext extends StrictLogging {
 
     // Instantiate the JMS ConnectionFactory object using this TransportConfiguration
     val connFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration)
-      
+    connFactory.setConsumerWindowSize(config.consumerWindowSize)
+    connFactory.setReconnectAttempts(config.reconnectAttempts)
+  
     val jmsContext = try {
       // Create a JMS v2.0 Context
       connFactory.createContext(Session.AUTO_ACKNOWLEDGE)

@@ -1,11 +1,12 @@
 package fr.proline.cortex.api
 
 import org.hornetq.core.remoting.impl.netty.TransportConstants
-//import fr.proline.cortex.api.CortexConstants._
 
 case class JMSConnectionConfig(
   serverHost: String = "localhost",
-  serverPort: Int = 5445
+  serverPort: Int = 5445,
+  consumerWindowSize: Int = 0, // disable client-side messages buffering (all messages remains on the server)
+  reconnectAttempts: Int = 10 // max. number of allowed reconnections
 ) {
   
   def toTransportConfigParams(): java.util.Map[String,Object] = {
