@@ -3,6 +3,7 @@ package fr.proline.cortex.client.service.dps.msq
 import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toLong
+import fr.proline.core.algo.msq.config.IQuantConfig
 import fr.proline.core.om.model.msq.ExperimentalDesign
 import fr.proline.cortex.api.service.dps.msq._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
@@ -15,7 +16,7 @@ case class QuantifyConfig(
   description: String,
   methodId: Long,
   experimentalDesign: ExperimentalDesign,
-  quantitationConfig: AnyRef
+  quantitationConfig: IQuantConfig
 ) extends IRemoteServiceConfig {
   
   import QuantifyService.PROCESS_METHOD._

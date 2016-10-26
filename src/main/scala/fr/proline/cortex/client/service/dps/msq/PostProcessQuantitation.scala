@@ -3,6 +3,7 @@ package fr.proline.cortex.client.service.dps.msq
 import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toBoolean
+import fr.proline.core.algo.msq.config.profilizer.ProfilizerConfig
 import fr.proline.cortex.api.service.dps.msq._
 import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
 import fr.proline.cortex.client.RemoteServiceCall
@@ -15,8 +16,7 @@ object PostProcessQuantitation extends AbstractRemoteProcessingServiceCaller[Boo
   def apply(
     projectId: Long,
     masterQuantChannelId: Long,
-    // TODO: put the ProfilizerConfig in Proline-OM ?
-    config: AnyRef // ProfilizerConfig
+    config: ProfilizerConfig
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
