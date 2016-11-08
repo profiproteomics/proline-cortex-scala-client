@@ -21,7 +21,7 @@
   </properties>
   
   <scm>
-    <connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-JMS-Components/Proline-Cortex-ScalaClient/trunk</connection>
+    <connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-JMS-Components/Proline-Cortex-ScalaClient/branches/0.1.0-RCandidates</connection>
   </scm>
   
   <dependencies>
