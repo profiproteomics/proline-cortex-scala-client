@@ -18,7 +18,9 @@ import scala.util.Try
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
 
 import fr.profi.util.concurrent.ObservableUtils
+import fr.profi.util.exception.SerializableStackTraceElement
 import fr.profi.util.jsonrpc.SerializableJSONRPC2Request
+import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.client.context.RemoteServiceCallerContext
 
 import rx.lang.scala.Observable
@@ -73,9 +75,10 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
       val errData = jsonError.getData
       if (errData != null) {
         try {
-          // FIXME: return the stack trace as an array of strings (StackTraceElement case class ???)
-          val stackTrace = jsonError.getData.toString.split("\r\n").map( _parseStackTraceElement )
-          jsonError.setStackTrace(stackTrace)
+          val jsonData = jsonError.getData()
+          val stackTrace = ProfiJson.getObjectMapper().convertValue(jsonData, classOf[Array[SerializableStackTraceElement]])
+          
+          jsonError.setStackTrace(stackTrace.map(_.toStackTraceElement()))
         } catch {
           case t: Throwable => {
             logger.error("Can't set the stack trace of the JSONRPC2Error", t)
@@ -93,22 +96,6 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     
     // Emit the response
     responseSuscriber.onNext(jsonResponse.getResult)
-  }
-  
-  // TODO: put in dedicated util class
-  private def _parseStackTraceElement(traceElemAsStr: String): StackTraceElement = {
-    
-    if (traceElemAsStr.endsWith("(Unknown Source)")) {
-      val TraceExtractor = """(.+)\.(.+)\(.+""".r
-      val TraceExtractor(className, methodName) = traceElemAsStr
-      new StackTraceElement(className, methodName,null, -1)
-    } else {
-      val TraceExtractor = """(.+)\.(.+)\((.+):(\d+)\)""".r
-      val TraceExtractor(className, methodName, sourceFile, lineNum) = traceElemAsStr
-      
-      new StackTraceElement(className, methodName,sourceFile, lineNum.toInt)
-    }
-
   }
   
   /**
