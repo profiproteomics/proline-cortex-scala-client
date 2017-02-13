@@ -17,7 +17,8 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with 
     rawFilePath: Option[String],
     mzdbFilePath: Option[String],
     instrumentId: Long,
-    ownerId: Long
+    ownerId: Long,
+    overwrite: Boolean = false
   )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
     
     val namedParams = new HashMap[String,Any]()
@@ -26,6 +27,7 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with 
     if (mzdbFilePath.isDefined) namedParams.put(MZDB_FILE_PATH_PARAM, mzdbFilePath.get)
     namedParams.put(INSTRUMENT_ID_PARAM, instrumentId)
     namedParams.put(OWNER_ID_PARAM, ownerId)
+    namedParams.put(OVERWRITE, overwrite)
     
     this.runService( Some(namedParams) )
   }
