@@ -12,7 +12,7 @@ import com.typesafe.scalalogging.StrictLogging
 
 import fr.proline.cortex.api._
 import fr.proline.cortex.api.CortexConstants._
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.client.context._
 import fr.proline.jms.service.api.IRemoteServiceIdentity
 import fr.proline.jms.util.JMSConstants
 import fr.proline.jms.util.JMSUtils
@@ -52,7 +52,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
    * If the JMS response is null then an Exception is thrown.
    * Else the JMS response is parsed using the ''emitRemoteServiceResponse'' method.
    */
-  protected def callRemoteService(jmsRequest: Message, synchronous: Boolean)(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[T]) = {
+  protected def callRemoteService(jmsRequest: Message, synchronous: Boolean)(implicit callerCtx: JMSServiceCallerContext): (Future[Message],Observable[T]) = {
     
     // Add some header properties to target the appropriate service and its corresponding version 
     jmsRequest.setStringProperty(JMSConstants.PROLINE_SERVICE_NAME_KEY, serviceName)
@@ -168,7 +168,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
     (promise.future, observable.subscribeOn(callerCtx.execCtxScheduler)) //.observeOn(callerCtx.execCtxScheduler)
   }
 
-  protected def addServiceClientToMessage(message: Message)(implicit callerCtx: RemoteServiceCallerContext): Unit = {
+  protected def addServiceClientToMessage(message: Message)(implicit callerCtx: JMSServiceCallerContext): Unit = {
 
     val clientName = callerCtx.clientName.getOrElse("UNKNWON")
     val ipAddress = InetAddress.getLocalHost().getHostAddress()

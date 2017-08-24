@@ -4,11 +4,9 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.api.service.dps.msi.{ ImportedResultFile => ResultFile }
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.api.service.dps.msi.ImportedResultFile
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
 case class ImportResultFileConfig(
   resultFiles: Seq[ResultFileDescriptorRuleId],
@@ -16,7 +14,7 @@ case class ImportResultFileConfig(
   peaklistSoftwareId: Long,
   storeSpectrumMatches: Boolean,
   importerProperties: Option[Map[String, Any]] = None
-) extends IRemoteServiceConfig {
+) extends INamedParamsBuilder {
   
   import ImportResultFilesServiceV2_0.PROCESS_METHOD._
   
@@ -31,11 +29,17 @@ case class ImportResultFileConfig(
   }
 }
 
-object ImportResultFiles extends AbstractRemoteProcessingServiceCaller[Array[ResultFile]] with IImportResultFilesServiceV2_0 {
+trait IImportResultFilesServiceCaller {
+  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Array[ImportedResultFile]]
+}
+
+object ImportResultFiles extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
+  with IImportResultFilesServiceV2_0
+  with IImportResultFilesServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[ResultFile]] = {
+  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Array[ImportedResultFile]] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)
@@ -43,8 +47,8 @@ object ImportResultFiles extends AbstractRemoteProcessingServiceCaller[Array[Res
     this.runService( Some(namedParams) )
   }
   
-  protected def convertResponseResult(responseResult: AnyRef): Array[ResultFile] = {
-    ProfiJson.getObjectMapper().convertValue(responseResult, classOf[Array[ResultFile]])
+  protected def convertResponseResult(responseResult: AnyRef): Array[ImportedResultFile] = {
+    ProfiJson.getObjectMapper().convertValue(responseResult, classOf[Array[ImportedResultFile]])
   }
   
 }

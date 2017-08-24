@@ -6,10 +6,8 @@ import fr.profi.util.primitives.toLong
 import fr.proline.core.algo.msq.config.IQuantConfig
 import fr.proline.core.om.model.msq.ExperimentalDesign
 import fr.proline.cortex.api.service.dps.msq._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
 case class QuantifyConfig(
   name: String,
@@ -17,7 +15,7 @@ case class QuantifyConfig(
   methodId: Long,
   experimentalDesign: ExperimentalDesign,
   quantitationConfig: IQuantConfig
-) extends IRemoteServiceConfig {
+) extends INamedParamsBuilder {
   
   import QuantifyService.PROCESS_METHOD._
   
@@ -33,14 +31,21 @@ case class QuantifyConfig(
   }
 }
 
-object Quantify extends AbstractRemoteProcessingServiceCaller[Long] with IQuantifyService {
+trait IQuantifyServiceCaller {
+  def apply(
+    projectId: Long,
+    config: QuantifyConfig
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+}
+
+object Quantify extends AbstractRemoteProcessingServiceCaller[Long] with IQuantifyService with IQuantifyServiceCaller {
   
   import this.PROCESS_METHOD._
   
   def apply(
     projectId: Long,
     config: QuantifyConfig
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

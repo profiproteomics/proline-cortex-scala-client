@@ -13,9 +13,8 @@ import org.hornetq.api.jms.HornetQJMSConstants
 
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
-import fr.proline.cortex.client.AbstractBinaryDataServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 import fr.proline.jms.util.JMSConstants
 
 object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
@@ -28,7 +27,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
     remoteFilePath: String,
     localFilePath: String,
     serverNodeId: String
-  )(implicit callerCtx: RemoteServiceCallerContext, ec: ExecutionContext): RemoteServiceCall[File] = {
+  )(implicit callerCtx: IServiceCallerContext, ec: ExecutionContext): JMSServiceCall[File] = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()

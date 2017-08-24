@@ -13,9 +13,8 @@ import scala.concurrent.Future
 import fr.profi.util.concurrent.ObservableUtils
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
-import fr.proline.cortex.client.AbstractByteStreamServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 import fr.proline.jms.util.JMSConstants
 
 import rx.lang.scala.Observable
@@ -29,7 +28,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
   def getBytes(
     remoteFilePath: String,
     serverNodeId: String
-  )(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
+  )(implicit callerCtx: IServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()
@@ -40,14 +39,14 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
       ()
     }
     
-    this.observeRemoteMethodResult(CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME, Some(namedParams), Some(messageAnnotator) )
+    this.observeRemoteMethodResult(CortexConstants.PROLINE_GET_RESOURCE_AS_STREAM_METHOD_NAME, Some(namedParams), Some(messageAnnotator))
   }
   
   def downloadToFile(
     remoteFilePath: String,
     localFilePath: String,
     serverNodeId: String
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[File] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[File] = {
     
     val file = new File(localFilePath)
     
@@ -77,7 +76,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
       
     }
     
-    new RemoteServiceCall( bytesMessageRequest, ObservableUtils.observableToFuture(observableFile) )
+    new JMSServiceCall( bytesMessageRequest, ObservableUtils.observableToFuture(observableFile) )
   }
   
 }

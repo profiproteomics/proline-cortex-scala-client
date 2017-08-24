@@ -13,15 +13,16 @@ import scala.concurrent.duration.Duration
 import com.typesafe.scalalogging.StrictLogging
 
 import fr.proline.cortex.api.CortexConstants
+import fr.proline.cortex.caller.IServiceCallerContext
 
 import rx.lang.scala.schedulers.ExecutionContextScheduler
 
-object BuildRemoteServiceCallerContext extends StrictLogging {
+object BuildJMSServiceCallerContext extends StrictLogging {
   
   def apply(
     clientName: Option[String] = None,
     queueName: String = CortexConstants.DEFAULT_PROLINE_SERVICE_REQUEST_QUEUE_NAME
-  )(implicit managedJmsContext: JMSContext): RemoteServiceCallerContext = {
+  )(implicit managedJmsContext: JMSContext): JMSServiceCallerContext = {
     
     logger.info(s"Using JMS Queue '$queueName'")
     
@@ -44,7 +45,7 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
       // Create a JMS Message Producer (Producer MUST be confined in current Thread)
       val jmsProducer = serviceCallerJmsCtx.createProducer()
       
-      new RemoteServiceCallerContext(
+      new JMSServiceCallerContext(
         clientName,
         serviceCallerJmsCtx,
         jmsQueue,
@@ -54,14 +55,28 @@ object BuildRemoteServiceCallerContext extends StrictLogging {
     
     Await.result(futureResult, Duration.Inf)
   }
+  
 }
 
-case class RemoteServiceCallerContext private[context](
+object JMSServiceCallerContext {
+  implicit def callerCtx2jmsCallerCtx(callerCtx: IServiceCallerContext): JMSServiceCallerContext = {
+    require(
+      callerCtx.isInstanceOf[JMSServiceCallerContext],
+      "Can't cast callerCtx to a JMSServiceCallerContext"
+    )
+    callerCtx.asInstanceOf[JMSServiceCallerContext]
+  }
+}
+
+case class JMSServiceCallerContext private[context](
   val clientName: Option[String],
   val jmsContext: JMSContext,
   val jmsQueue: Queue,
   val jmsProducer: JMSProducer
-)(implicit val execCtx: ExecutionContext, implicit private val threadExecutor: ExecutorService) extends StrictLogging {
+)(
+  implicit val execCtx: ExecutionContext,
+  implicit private val threadExecutor: ExecutorService
+) extends IServiceCallerContext with StrictLogging {
   
   val execCtxScheduler = ExecutionContextScheduler(execCtx)
   

@@ -4,11 +4,20 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toInt
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
-object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int] with IUpdateSpectraParamsServiceV2_0 {
+trait IUpdateSpectraParamsServiceCaller {
+  def apply(
+    projectId: Long,
+    resultSetIds: Seq[Long],
+    peaklistSoftwareId: Long
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Int]
+}
+
+object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int]
+    with IUpdateSpectraParamsServiceV2_0
+    with IUpdateSpectraParamsServiceCaller {
   
   import this.PROCESS_METHOD._
   
@@ -16,7 +25,7 @@ object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int] wi
     projectId: Long,
     resultSetIds: Seq[Long],
     peaklistSoftwareId: Long
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Int] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Int] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

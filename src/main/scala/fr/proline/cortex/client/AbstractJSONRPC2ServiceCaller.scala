@@ -21,7 +21,8 @@ import fr.profi.util.concurrent.ObservableUtils
 import fr.profi.util.exception.SerializableStackTraceElement
 import fr.profi.util.jsonrpc.SerializableJSONRPC2Request
 import fr.profi.util.serialization.ProfiJson
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client.context._
 
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscriber
@@ -82,6 +83,8 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
         } catch {
           case t: Throwable => {
             logger.error("Can't set the stack trace of the JSONRPC2Error", t)
+            
+            logger.debug("JSON response was:\n" +jmsMessage.asInstanceOf[TextMessage].getText)
           }
         }
       }
@@ -110,7 +113,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean = false
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[T] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[T] = {
     
     val (futureRequest, observableConvertedResult) = this.observeRemoteMethodResult(
       methodName,
@@ -120,7 +123,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
       synchronous
     )
     
-    new RemoteServiceCall(futureRequest, ObservableUtils.observableToFuture(observableConvertedResult))
+    new JMSServiceCall(futureRequest, ObservableUtils.observableToFuture(observableConvertedResult))
   }
   
   /**
@@ -135,7 +138,9 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean
-  )(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[T]) = {
+  )(implicit callerCtx: IServiceCallerContext): (Future[Message],Observable[T]) = {
+    
+    implicit val jmsCallerCtx: JMSServiceCallerContext = callerCtx
     
     logger.debug(s"Serializing JSON-RPC request for service '$serviceName' and method '$methodName'")
     
@@ -146,7 +151,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
       params = namedParams.orNull
     )
     
-    val textMessage = callerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
+    val textMessage = jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
     if (annotateRequest.isDefined) annotateRequest.get.apply(textMessage)
     
     val (futureRequest, observableResult) = this.callRemoteService(textMessage, synchronous)

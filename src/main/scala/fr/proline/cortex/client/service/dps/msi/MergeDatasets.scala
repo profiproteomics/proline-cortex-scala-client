@@ -5,17 +5,32 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toLong
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
-object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSetsServiceV2_0 {
+trait IMergeDatasetsServiceCaller {
+  def mergeResultSets(
+    projectId: Long,
+    resultSetIds: Seq[Long],
+    additionMode: Option[String]
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+  
+  def mergeResultSummaries(
+    projectId: Long,
+    resultSummaryIds: Seq[Long],
+    additionMode: Option[String]
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[MergeResultSetsServiceV2_0.RSMMergeResult]
+}
+
+object MergeDatasets extends AbstractJSONRPC2ServiceCaller
+  with IMergeResultSetsServiceV2_0
+  with IMergeDatasetsServiceCaller {
   
   def mergeResultSets(
     projectId: Long,
     resultSetIds: Seq[Long],
-    additionMode: Option[String] // TODO: move AdditionMode from OMP to OM
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+    additionMode: Option[String] // TODO: move AdditionMode enum from OMP to OM
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
     
     import MERGE_RESULT_SETS_METHOD._
     
@@ -30,8 +45,8 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
   def mergeResultSummaries(
     projectId: Long,
     resultSummaryIds: Seq[Long],
-    additionMode: Option[String]
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[RSMMergeResult] = {
+    additionMode: Option[String] // TODO: move AdditionMode enum from OMP to OM
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[MergeResultSetsServiceV2_0.RSMMergeResult] = {
     
     import MERGE_RESULT_SUMMARIES_METHOD._
     
@@ -41,7 +56,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller with IMergeResultSets
     if (additionMode.isDefined) namedParams.put(AGGREGATION_MODE_PARAM, additionMode.get)
     
     this.executeRemoteMethod(MERGE_RESULT_SUMMARIES_METHOD.name, Some(namedParams), None, { responseResult =>
-      ProfiJson.getObjectMapper().convertValue(responseResult, classOf[RSMMergeResult])
+      ProfiJson.getObjectMapper().convertValue(responseResult, classOf[MergeResultSetsServiceV2_0.RSMMergeResult])
     })
   }
   

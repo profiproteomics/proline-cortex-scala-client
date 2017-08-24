@@ -5,10 +5,9 @@ import scala.collection.mutable.HashMap
 import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.uds._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
+import fr.proline.cortex.client.service.dps.msi.IValidateResultSetConfig
 
 case class ValidateIdentDSTreeConfig(
   parentDatasetIds: Array[Long],
@@ -19,7 +18,7 @@ case class ValidateIdentDSTreeConfig(
   pepSetScoreType: Option[String], // TODO: move fr.proline.core.algo.msi.scoring.PepSetScoring to OM
   protSetFilters: Option[Array[FilterConfig]],
   protSetValidatorConfig: Option[ProtSetValidatorConfig]
-) extends IRemoteServiceConfig {
+) extends IValidateResultSetConfig with INamedParamsBuilder {
   
   import ValidateIdentDSInTreeService.PROCESS_METHOD._
   import ValidateResultSetService.PROCESS_METHOD._
@@ -39,11 +38,17 @@ case class ValidateIdentDSTreeConfig(
   }
 }
 
-object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Boolean] with IValidateIdentDSInTreeService {
+trait IValidateIdentDSTreeServiceCaller {
+  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+}
+
+object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Boolean]
+  with IValidateIdentDSInTreeService
+  with IValidateIdentDSTreeServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
+  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

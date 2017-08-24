@@ -3,19 +3,31 @@ package fr.proline.cortex.client.service.dps.msi
 import java.io.File
 
 import scala.collection.JavaConversions._
+import scala.collection.Map
 import scala.collection.mutable.HashMap
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractJSONRPC2ServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 import fr.proline.cortex.client.service.misc.RemoteFile
 import fr.proline.jms.util.JMSConstants
 
-object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportResultSummariesServiceV2_0 {
+trait IExportResultSummariesServiceCaller {
+  def export(
+    rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
+    fileFormat: ExportFileFormat.Value,
+    fileDirectory: String,
+    fileName: String,
+    extraParams: Option[Map[String, Any]] = None
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Array[String]]
+}
+
+object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller
+    with IExportResultSummariesServiceV2_0
+    with IExportResultSummariesServiceCaller {
   
   import this.PROCESS_METHOD._
   
@@ -24,17 +36,17 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
   def export(
     rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
     fileFormat: ExportFileFormat.Value,
-    fileName: Option[String] = None,
-    fileDirectory: Option[String] = None,
+    fileDirectory: String,
+    fileName: String,
     extraParams: Option[Map[String, Any]] = None
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Array[String]] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Array[String]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
     namedParams.put(FILE_FORMAT_PARAM, fileFormat.toString )
     
-    if (fileName.isDefined) namedParams.put(FILE_NAME_PARAM, fileName.get)
-    if (fileDirectory.isDefined) namedParams.put(FILE_DIRECTORY_PARAM, fileDirectory.get)
+    namedParams.put(FILE_DIRECTORY_PARAM, fileDirectory)
+    namedParams.put(FILE_NAME_PARAM, fileName)
     namedParams.put(OUTPUT_MODE_PARAM, ExportOutputMode.FILE.toString)
     if (extraParams.isDefined) namedParams.put(EXTRA_PARAMS_PARAM, extraParams.get)
     
@@ -59,7 +71,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller with IExportR
     fileFormat: ExportFileFormat.Value,
     extraParams: Option[Map[String, Any]],
     localFileDirectory: String
-  )(implicit callerCtx: RemoteServiceCallerContext, ec: ExecutionContext): RemoteServiceCall[List[File]] = {
+  )(implicit callerCtx: IServiceCallerContext, ec: ExecutionContext): JMSServiceCall[List[File]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)

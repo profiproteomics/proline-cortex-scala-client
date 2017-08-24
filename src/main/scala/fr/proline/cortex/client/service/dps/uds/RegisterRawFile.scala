@@ -4,11 +4,23 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.uds._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
-object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with IRegisterRawFileService {
+trait IRegisterRawFileServiceCaller {
+  def apply(
+    rawFileIdentifier: String,
+    rawFilePath: Option[String],
+    mzdbFilePath: Option[String],
+    instrumentId: Long,
+    ownerId: Long,
+    overwrite: Boolean = false
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+}
+
+object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long]
+    with IRegisterRawFileService
+    with IRegisterRawFileServiceCaller {
   
   import this.PROCESS_METHOD._
   
@@ -19,7 +31,7 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long] with 
     instrumentId: Long,
     ownerId: Long,
     overwrite: Boolean = false
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RAW_FILE_IDENTIFIER_PARAM, rawFileIdentifier)

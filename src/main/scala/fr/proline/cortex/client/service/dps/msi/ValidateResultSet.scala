@@ -4,10 +4,17 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
+
+trait IValidateResultSetConfig {
+  def useTdCompetition: Option[Boolean]
+  def pepMatchFilters: Option[Array[FilterConfig]]
+  def pepMatchValidatorConfig: Option[PepMatchValidatorConfig]
+  def pepSetScoreType: Option[String] // TODO: move fr.proline.core.algo.msi.scoring.PepSetScoring to OM
+  def protSetFilters: Option[Array[FilterConfig]]
+  def protSetValidatorConfig: Option[ProtSetValidatorConfig]
+}
 
 case class ValidateResultSetConfig(
   resultSetId: Long,
@@ -18,7 +25,7 @@ case class ValidateResultSetConfig(
   pepSetScoreType: Option[String], // TODO: move fr.proline.core.algo.msi.scoring.PepSetScoring to OM
   protSetFilters: Option[Array[FilterConfig]],
   protSetValidatorConfig: Option[ProtSetValidatorConfig]
-) extends IRemoteServiceConfig {
+) extends IValidateResultSetConfig with INamedParamsBuilder {
   
   import ValidateResultSetService.PROCESS_METHOD._
   
@@ -37,11 +44,17 @@ case class ValidateResultSetConfig(
   }
 }
 
-object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long] with IValidateResultSetService {
+trait IValidateResultSetServiceCaller {
+  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+}
+
+object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long]
+  with IValidateResultSetService
+  with IValidateResultSetServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

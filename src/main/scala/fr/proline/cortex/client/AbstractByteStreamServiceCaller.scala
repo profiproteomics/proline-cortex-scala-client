@@ -1,16 +1,19 @@
 package fr.proline.cortex.client
 
 import java.nio.ByteBuffer
+
 import javax.jms.BytesMessage
 import javax.jms.Message
 import javax.jms.TextMessage
+
 import scala.collection.mutable.HashMap
-import fr.profi.util.concurrent.ObservableUtils
-import fr.proline.cortex.client.context.BuildRemoteServiceCallerContext
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import scala.concurrent.Future
+
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client.context._
+
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscriber
-import scala.concurrent.Future
 
 abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCaller {
   
@@ -26,10 +29,12 @@ abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCa
     methodName: String,
     namedParams: Option[HashMap[String,Any]],
     annotateRequest: Option[TextMessage => Unit]
-  )(implicit callerCtx: RemoteServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
+  )(implicit callerCtx: IServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
     
-    val newJmsContext = callerCtx.jmsContext.createContext(callerCtx.jmsContext.getSessionMode)
-    val localCallerContext = BuildRemoteServiceCallerContext()(newJmsContext)
+    implicit val jmsCallerCtx: JMSServiceCallerContext = callerCtx
+    
+    val newJmsContext = jmsCallerCtx.jmsContext.createContext(jmsCallerCtx.jmsContext.getSessionMode)
+    val localCallerContext = BuildJMSServiceCallerContext()(newJmsContext)
     
     val (futureRequest, observableConvertedResult) = super.observeRemoteMethodResult[ByteBuffer](
       methodName,

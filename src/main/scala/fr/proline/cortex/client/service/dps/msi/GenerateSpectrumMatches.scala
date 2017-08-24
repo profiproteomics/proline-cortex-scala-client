@@ -4,17 +4,15 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.IRemoteServiceConfig
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
 case class GenerateSpectrumMatchesConfig(
   resultSetId: Long,
   resultSummaryId: Option[Long],
-  peptideMatchIds: Option[Seq[Long]],
+  peptideMatchIds: Option[Array[Long]],
   forceInsert: Option[Boolean] = None
-) extends IRemoteServiceConfig {
+) extends INamedParamsBuilder {
   
   import GenerateSpectrumMatchesService.PROCESS_METHOD._
   
@@ -28,11 +26,17 @@ case class GenerateSpectrumMatchesConfig(
   }
 }
 
-object GenerateSpectrumMatches extends AbstractRemoteProcessingServiceCaller[Boolean] with IGenerateSpectrumMatchesService {
+trait IGenerateSpectrumMatchesServiceCaller {
+  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+}
+
+object GenerateSpectrumMatches extends AbstractRemoteProcessingServiceCaller[Boolean]
+    with IGenerateSpectrumMatchesService
+    with IGenerateSpectrumMatchesServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
+  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

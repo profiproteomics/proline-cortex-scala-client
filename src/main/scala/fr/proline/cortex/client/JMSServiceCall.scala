@@ -7,7 +7,9 @@ import scala.collection.mutable.HashMap
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-object RemoteServiceCall {
+import fr.proline.cortex.caller.IServiceCall
+
+object JMSServiceCall {
   
   def messageToPropertyMap(message: Message): Map[String, Any] = {
     
@@ -39,16 +41,14 @@ object RemoteServiceCall {
   
 }
 
-class RemoteServiceCall[+T](
+case class JMSServiceCall[+T](
   val request: Future[Message],
   val result: Future[T]
-) {
+) extends IServiceCall[T] {
   
-  def map[S](f: T => S)(implicit ec: ExecutionContext): RemoteServiceCall[S] = newResult(mapResult(f)(ec))
+  def map[S](f: T => S)(implicit ec: ExecutionContext): JMSServiceCall[S] = newResult(mapResult(f)(ec))
   
-  def mapResult[S](f: T => S)(implicit ec: ExecutionContext): Future[S] = result.map { f }
-  
-  def newResult[S](newResult: Future[S]): RemoteServiceCall[S] = {
-    new RemoteServiceCall(request, newResult)
+  def newResult[S](newResult: Future[S]): JMSServiceCall[S] = {
+    new JMSServiceCall(request, newResult)
   }
 }

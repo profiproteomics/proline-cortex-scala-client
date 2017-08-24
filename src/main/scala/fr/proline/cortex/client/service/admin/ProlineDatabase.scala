@@ -2,14 +2,24 @@ package fr.proline.cortex.client.service.admin
 
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.admin.IGetConnectionTemplateService
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 import fr.proline.repository.AbstractDatabaseConnector
 
 import rx.lang.scala.Observable
 
-object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String, Object]] with IGetConnectionTemplateService {
+trait IProlineDatabaseServiceCaller {
+  def getConnectionTemplate()(implicit callerCtx: IServiceCallerContext): IServiceCall[collection.Map[String, Object]]
+  def getEncryptedPassword(
+    login: String,
+    passwordHash: String,
+    publicKey: String
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[String]
+}
+
+object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String, Object]]
+  with IGetConnectionTemplateService
+  with IProlineDatabaseServiceCaller {
   
   private val requiredKeys = Array(
     AbstractDatabaseConnector.PERSISTENCE_JDBC_DRIVER_KEY,
@@ -17,7 +27,7 @@ object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String,
     AbstractDatabaseConnector.PERSISTENCE_JDBC_USER_KEY
   )
   
-  def getConnectionTemplate()(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Map[String, Object]] = {
+  def getConnectionTemplate()(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Map[String, Object]] = {
     this.runService()
   }
   
@@ -49,7 +59,7 @@ object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String,
     login: String,
     passwordHash: String,
     publicKey: String
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[String] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[String] = {
     ProlineUserAccount.getDatabasePassword(login, passwordHash, publicKey)
   }
     

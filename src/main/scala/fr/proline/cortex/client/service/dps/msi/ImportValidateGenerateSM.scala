@@ -2,13 +2,31 @@ package fr.proline.cortex.client.service.dps.msi
 
 import scala.collection.mutable.HashMap
 
-import fr.profi.util.primitives.toLong
+import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
-object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Long] with IImportValidateGenerateSMService {
+trait IImportValidateGenerateSMServiceCaller {
+  def apply(
+    projectId: Long,
+    
+    // Import specific parameters
+    importResultFileConfig: ImportResultFileConfig,
+    
+    // Validation specific parameters
+    validateResultSetConfig: ValidateResultSetConfig,
+    
+    // "Generate Spectrum Matches" specific parameters
+    generateSpectrumMatches: Option[Boolean] = None,
+    forceInsert: Option[Boolean] = None
+    
+  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Array[ImportedResultFile]]
+}
+
+object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
+  with IImportValidateGenerateSMService
+  with IImportValidateGenerateSMServiceCaller {
   
   import this.PROCESS_METHOD._
   
@@ -25,7 +43,7 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
     generateSpectrumMatches: Option[Boolean] = None,
     forceInsert: Option[Boolean] = None
     
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Long] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Array[ImportedResultFile]] = {
     
     val namedParams = new HashMap[String,Any]()
     
@@ -62,7 +80,7 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
     // Generate Spectrum Matches specific parameters
     generateSpectrumMatches: Option[Boolean],
     forceInsert: Option[Boolean] = None
-  )(implicit callerCtx: RemoteServiceCallerContext): Observable[Long] = {
+  )(implicit callerCtx: IServiceCallerContext): Observable[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)
@@ -86,6 +104,8 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Lo
     this.runService( Some(namedParams) )
   }*/
   
-  protected def convertResponseResult(responseResult: AnyRef): Long = toLong(responseResult)
+  protected def convertResponseResult(responseResult: AnyRef): Array[ImportedResultFile] = {
+    ProfiJson.getObjectMapper().convertValue(responseResult, classOf[Array[ImportedResultFile]])
+  }
   
 }

@@ -3,7 +3,8 @@ package fr.proline.cortex.client
 import scala.collection.mutable.HashMap
 
 import fr.proline.cortex.api.CortexConstants
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client.context._
 
 import rx.lang.scala.Observable
 
@@ -21,7 +22,7 @@ abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2
    */
   def runService(
     namedParams: Option[HashMap[String,Any]] = None
-  )(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[T] = {
+  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[T] = {
     executeRemoteMethod(CortexConstants.PROLINE_PROCESS_METHOD_NAME, namedParams, None, convertResponseResult)
   }
   

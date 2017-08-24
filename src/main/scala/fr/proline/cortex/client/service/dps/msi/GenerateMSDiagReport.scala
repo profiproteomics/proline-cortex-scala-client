@@ -1,18 +1,23 @@
 package fr.proline.cortex.client.service.dps.msi
 
 import scala.collection.mutable.HashMap
-import fr.profi.util.primitives.toBoolean
-import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
-import fr.profi.util.serialization.ProfiJson
 
-object GenerateMSDiagReport extends AbstractRemoteProcessingServiceCaller[String] with IGenerateMSDiagReportService {
+import fr.profi.util.serialization.ProfiJson
+import fr.proline.cortex.api.service.dps.msi._
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
+
+trait IGenerateMSDiagReportServiceCaller {
+  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any])(implicit callerCtx: IServiceCallerContext): IServiceCall[String]
+}
+
+object GenerateMSDiagReport extends AbstractRemoteProcessingServiceCaller[String]
+  with IGenerateMSDiagReportService
+  with IGenerateMSDiagReportServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[String] = {
+  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[String] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

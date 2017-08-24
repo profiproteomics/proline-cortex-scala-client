@@ -4,15 +4,21 @@ import scala.collection.mutable.HashMap
 
 import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
-import fr.proline.cortex.client.AbstractRemoteProcessingServiceCaller
-import fr.proline.cortex.client.RemoteServiceCall
-import fr.proline.cortex.client.context.RemoteServiceCallerContext
+import fr.proline.cortex.caller._
+import fr.proline.cortex.client._
 
-object CertifyResultFiles extends AbstractRemoteProcessingServiceCaller[Boolean] with ICertifyResultFilesService {
+trait ICertifyResultFilesServiceCaller {
+  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]])(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+}
+
+object CertifyResultFiles extends AbstractRemoteProcessingServiceCaller[Boolean]
+    with ICertifyResultFilesService
+    with ICertifyResultFilesServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]])(implicit callerCtx: RemoteServiceCallerContext): RemoteServiceCall[Boolean] = {
+  // FIXME: return a boolean instead of a string in cortex
+  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
@@ -22,6 +28,9 @@ object CertifyResultFiles extends AbstractRemoteProcessingServiceCaller[Boolean]
     this.runService( Some(namedParams) )
   }
   
-  protected def convertResponseResult(responseResult: AnyRef): Boolean = toBoolean(responseResult)
+  //protected def convertResponseResult(responseResult: AnyRef): Boolean = toBoolean(responseResult)
+  protected def convertResponseResult(responseResult: AnyRef): Boolean = {
+    responseResult.toString == "OK"
+  }
   
 }
