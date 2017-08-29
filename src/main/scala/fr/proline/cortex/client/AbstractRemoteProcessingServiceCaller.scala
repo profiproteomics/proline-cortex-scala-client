@@ -22,7 +22,7 @@ abstract class AbstractRemoteProcessingServiceCaller[T] extends AbstractJSONRPC2
    */
   def runService(
     namedParams: Option[HashMap[String,Any]] = None
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[T] = {
+  )(implicit callerCtx: JMSServiceCallerContext): JMSServiceCall[T] = {
     executeRemoteMethod(CortexConstants.PROLINE_PROCESS_METHOD_NAME, namedParams, None, convertResponseResult)
   }
   

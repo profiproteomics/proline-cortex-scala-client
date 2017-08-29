@@ -7,6 +7,7 @@ import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 import fr.proline.cortex.client.service.dps.msi.IValidateResultSetConfig
 
 case class ValidateIdentDSTreeConfig(
@@ -38,17 +39,18 @@ case class ValidateIdentDSTreeConfig(
   }
 }
 
-trait IValidateIdentDSTreeServiceCaller {
-  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+trait IValidateIdentDSTreeServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, config: ValidateIdentDSTreeConfig): IServiceCall[Boolean]
 }
 
-object ValidateIdentDSTree extends AbstractRemoteProcessingServiceCaller[Boolean]
+case class ValidateIdentDSTree()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Boolean]
   with IValidateIdentDSInTreeService
   with IValidateIdentDSTreeServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateIdentDSTreeConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def apply(projectId: Long, config: ValidateIdentDSTreeConfig): JMSServiceCall[Boolean] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

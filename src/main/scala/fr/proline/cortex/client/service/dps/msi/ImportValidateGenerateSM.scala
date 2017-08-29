@@ -6,8 +6,9 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IImportValidateGenerateSMServiceCaller {
+trait IImportValidateGenerateSMServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     
@@ -21,10 +22,11 @@ trait IImportValidateGenerateSMServiceCaller {
     generateSpectrumMatches: Option[Boolean] = None,
     forceInsert: Option[Boolean] = None
     
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Array[ImportedResultFile]]
+  ): IServiceCall[Array[ImportedResultFile]]
 }
 
-object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
+case class ImportValidateGenerateSM()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
   with IImportValidateGenerateSMService
   with IImportValidateGenerateSMServiceCaller {
   
@@ -43,7 +45,7 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Ar
     generateSpectrumMatches: Option[Boolean] = None,
     forceInsert: Option[Boolean] = None
     
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Array[ImportedResultFile]] = {
+  ): JMSServiceCall[Array[ImportedResultFile]] = {
     
     val namedParams = new HashMap[String,Any]()
     
@@ -80,7 +82,7 @@ object ImportValidateGenerateSM extends AbstractRemoteProcessingServiceCaller[Ar
     // Generate Spectrum Matches specific parameters
     generateSpectrumMatches: Option[Boolean],
     forceInsert: Option[Boolean] = None
-  )(implicit callerCtx: IServiceCallerContext): Observable[Long] = {
+  ): Observable[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)

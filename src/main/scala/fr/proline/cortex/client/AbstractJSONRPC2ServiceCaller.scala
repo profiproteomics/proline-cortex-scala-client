@@ -113,7 +113,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean = false
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[T] = {
+  )(implicit callerCtx: JMSServiceCallerContext): JMSServiceCall[T] = {
     
     val (futureRequest, observableConvertedResult) = this.observeRemoteMethodResult(
       methodName,
@@ -138,9 +138,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean
-  )(implicit callerCtx: IServiceCallerContext): (Future[Message],Observable[T]) = {
-    
-    implicit val jmsCallerCtx: JMSServiceCallerContext = callerCtx
+  )(implicit jmsCallerCtx: JMSServiceCallerContext): (Future[Message],Observable[T]) = {
     
     logger.debug(s"Serializing JSON-RPC request for service '$serviceName' and method '$methodName'")
     

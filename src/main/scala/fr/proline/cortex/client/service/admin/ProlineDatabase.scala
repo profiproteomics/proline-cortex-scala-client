@@ -4,20 +4,21 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.admin.IGetConnectionTemplateService
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 import fr.proline.repository.AbstractDatabaseConnector
 
 import rx.lang.scala.Observable
 
-trait IProlineDatabaseServiceCaller {
-  def getConnectionTemplate()(implicit callerCtx: IServiceCallerContext): IServiceCall[collection.Map[String, Object]]
+trait IProlineDatabaseServiceCaller extends IServiceCaller {
+  def getConnectionTemplate(): IServiceCall[collection.Map[String, Object]]
   def getEncryptedPassword(
     login: String,
     passwordHash: String,
     publicKey: String
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[String]
+  ): IServiceCall[String]
 }
 
-object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String, Object]]
+case class ProlineDatabase()(implicit val callerCtx: JMSServiceCallerContext) extends AbstractRemoteProcessingServiceCaller[Map[String, Object]]
   with IGetConnectionTemplateService
   with IProlineDatabaseServiceCaller {
   
@@ -27,7 +28,7 @@ object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String,
     AbstractDatabaseConnector.PERSISTENCE_JDBC_USER_KEY
   )
   
-  def getConnectionTemplate()(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Map[String, Object]] = {
+  def getConnectionTemplate(): JMSServiceCall[Map[String, Object]] = {
     this.runService()
   }
   
@@ -59,8 +60,8 @@ object ProlineDatabase extends AbstractRemoteProcessingServiceCaller[Map[String,
     login: String,
     passwordHash: String,
     publicKey: String
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[String] = {
-    ProlineUserAccount.getDatabasePassword(login, passwordHash, publicKey)
+  ): JMSServiceCall[String] = {
+    ProlineUserAccount().getDatabasePassword(login, passwordHash, publicKey)
   }
     
 }

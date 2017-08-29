@@ -7,6 +7,7 @@ import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.api.service.dps.msi.ImportedResultFile
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
 case class ImportResultFileConfig(
   resultFiles: Seq[ResultFileDescriptorRuleId],
@@ -29,17 +30,18 @@ case class ImportResultFileConfig(
   }
 }
 
-trait IImportResultFilesServiceCaller {
-  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Array[ImportedResultFile]]
+trait IImportResultFilesServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, config: ImportResultFileConfig): IServiceCall[Array[ImportedResultFile]]
 }
 
-object ImportResultFiles extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
+case class ImportResultFiles()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
   with IImportResultFilesServiceV2_0
   with IImportResultFilesServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ImportResultFileConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Array[ImportedResultFile]] = {
+  def apply(projectId: Long, config: ImportResultFileConfig): JMSServiceCall[Array[ImportedResultFile]] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(IMPORT_PROJECT_ID_PARAM, projectId)

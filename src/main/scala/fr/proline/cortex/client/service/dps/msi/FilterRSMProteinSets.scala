@@ -6,22 +6,24 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IFilterRSMProteinSetsServiceCaller {
+trait IFilterRSMProteinSetsServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     resultSummaryId: Long,
     protSetFilterConfigs: Seq[FilterConfig]
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+  ): IServiceCall[Boolean]
 }
 
-object FilterRSMProteinSets extends AbstractRemoteProcessingServiceCaller[Boolean]
+case class FilterRSMProteinSets()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Boolean]
   with IFilterRSMProteinSetsService
   with IFilterRSMProteinSetsServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, resultSummaryId: Long, protSetFilterConfigs: Seq[FilterConfig])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def apply(projectId: Long, resultSummaryId: Long, protSetFilterConfigs: Seq[FilterConfig]): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

@@ -7,16 +7,17 @@ import fr.proline.core.algo.msq.config.profilizer.ProfilizerConfig
 import fr.proline.cortex.api.service.dps.msq._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IPostProcessQuantitationServiceCaller {
+trait IPostProcessQuantitationServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     masterQuantChannelId: Long,
     config: ProfilizerConfig
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+  ): IServiceCall[Boolean]
 }
 
-object PostProcessQuantitation extends AbstractRemoteProcessingServiceCaller[Boolean]
+case class PostProcessQuantitation()(implicit val callerCtx: JMSServiceCallerContext) extends AbstractRemoteProcessingServiceCaller[Boolean]
   with IComputeQuantProfilesService
   with IPostProcessQuantitationServiceCaller {
   
@@ -26,7 +27,7 @@ object PostProcessQuantitation extends AbstractRemoteProcessingServiceCaller[Boo
     projectId: Long,
     masterQuantChannelId: Long,
     config: ProfilizerConfig
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  ): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

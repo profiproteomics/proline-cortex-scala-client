@@ -6,8 +6,9 @@ import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IRegisterRawFileServiceCaller {
+trait IRegisterRawFileServiceCaller extends IServiceCaller {
   def apply(
     rawFileIdentifier: String,
     rawFilePath: Option[String],
@@ -15,10 +16,11 @@ trait IRegisterRawFileServiceCaller {
     instrumentId: Long,
     ownerId: Long,
     overwrite: Boolean = false
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+  ): IServiceCall[Long]
 }
 
-object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long]
+case class RegisterRawFile()(implicit val callerCtx: JMSServiceCallerContext)
+    extends AbstractRemoteProcessingServiceCaller[Long]
     with IRegisterRawFileService
     with IRegisterRawFileServiceCaller {
   
@@ -31,7 +33,7 @@ object RegisterRawFile extends AbstractRemoteProcessingServiceCaller[Long]
     instrumentId: Long,
     ownerId: Long,
     overwrite: Boolean = false
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
+  ): JMSServiceCall[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RAW_FILE_IDENTIFIER_PARAM, rawFileIdentifier)

@@ -6,16 +6,17 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IChangeRepresentativeProteinMatchServiceCaller {
+trait IChangeRepresentativeProteinMatchServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     resultSummaryId: Long,
     rules: Array[RepresentativeProteinMatchRule]
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+  ): IServiceCall[Boolean]
 }
 
-object ChangeRepresentativeProteinMatch 
+case class ChangeRepresentativeProteinMatch()(implicit val callerCtx: JMSServiceCallerContext)
   extends AbstractRemoteProcessingServiceCaller[Boolean]
   with IChangeRepresentativeProteinMatchService
   with IChangeRepresentativeProteinMatchServiceCaller {
@@ -26,7 +27,7 @@ object ChangeRepresentativeProteinMatch
     projectId: Long,
     resultSummaryId: Long,
     rules: Array[RepresentativeProteinMatchRule]
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  ): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

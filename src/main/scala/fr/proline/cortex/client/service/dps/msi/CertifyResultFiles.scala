@@ -6,19 +6,21 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait ICertifyResultFilesServiceCaller {
-  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]])(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+trait ICertifyResultFilesServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]]): IServiceCall[Boolean]
 }
 
-object CertifyResultFiles extends AbstractRemoteProcessingServiceCaller[Boolean]
+case class CertifyResultFiles()(implicit val callerCtx: JMSServiceCallerContext)
+    extends AbstractRemoteProcessingServiceCaller[Boolean]
     with ICertifyResultFilesService
     with ICertifyResultFilesServiceCaller {
-  
+
   import this.PROCESS_METHOD._
   
   // FIXME: return a boolean instead of a string in cortex
-  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def apply(projectId: Long, resultFiles: Seq[ResultFileDescriptorRuleId], importerProperties: Option[Map[String, Any]]): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

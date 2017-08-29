@@ -6,17 +6,19 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IImportMaxQuantResultsServiceCaller {
+trait IImportMaxQuantResultsServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     resultFilesDir: String,
     instrumentConfigId: Long,
     peaklistSoftwareId: Long
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[collection.Map[String, Any]]
+  ): IServiceCall[collection.Map[String, Any]]
 }
 
-object ImportMaxQuantResults extends AbstractRemoteProcessingServiceCaller[collection.Map[String, Any]]
+case class ImportMaxQuantResults()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[collection.Map[String, Any]]
   with IImportMaxQuantResultsService
   with IImportMaxQuantResultsServiceCaller {
   
@@ -27,7 +29,7 @@ object ImportMaxQuantResults extends AbstractRemoteProcessingServiceCaller[colle
     resultFilesDir: String,
     instrumentConfigId: Long,
     peaklistSoftwareId: Long
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[collection.Map[String, Any]] = {
+  ): JMSServiceCall[collection.Map[String, Any]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

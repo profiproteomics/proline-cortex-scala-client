@@ -6,18 +6,20 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IGenerateMSDiagReportServiceCaller {
-  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any])(implicit callerCtx: IServiceCallerContext): IServiceCall[String]
+trait IGenerateMSDiagReportServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any]): IServiceCall[String]
 }
 
-object GenerateMSDiagReport extends AbstractRemoteProcessingServiceCaller[String]
+case class GenerateMSDiagReport()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[String]
   with IGenerateMSDiagReportService
   with IGenerateMSDiagReportServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[String] = {
+  def apply(projectId: Long, resultSetId: Long, msdiagSettings: Map[String, Any]): JMSServiceCall[String] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

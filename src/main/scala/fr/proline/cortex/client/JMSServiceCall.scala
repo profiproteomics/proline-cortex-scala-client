@@ -46,6 +46,12 @@ case class JMSServiceCall[+T](
   val result: Future[T]
 ) extends IServiceCall[T] {
   
+  def getRequestId()(implicit ec: ExecutionContext): Future[String] = {
+    request.map { message =>
+      message.getJMSMessageID
+    }
+  }
+  
   def map[S](f: T => S)(implicit ec: ExecutionContext): JMSServiceCall[S] = newResult(mapResult(f)(ec))
   
   def newResult[S](newResult: Future[S]): JMSServiceCall[S] = {

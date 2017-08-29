@@ -6,6 +6,7 @@ import fr.profi.util.primitives.toLong
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
 trait IValidateResultSetConfig {
   def useTdCompetition: Option[Boolean]
@@ -44,17 +45,18 @@ case class ValidateResultSetConfig(
   }
 }
 
-trait IValidateResultSetServiceCaller {
-  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+trait IValidateResultSetServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, config: ValidateResultSetConfig): IServiceCall[Long]
 }
 
-object ValidateResultSet extends AbstractRemoteProcessingServiceCaller[Long]
+case class ValidateResultSet()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Long]
   with IValidateResultSetService
   with IValidateResultSetServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: ValidateResultSetConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
+  def apply(projectId: Long, config: ValidateResultSetConfig): JMSServiceCall[Long] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

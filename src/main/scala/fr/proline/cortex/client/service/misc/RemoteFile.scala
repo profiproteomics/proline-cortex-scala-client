@@ -15,9 +15,12 @@ import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 import fr.proline.jms.util.JMSConstants
 
-object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
+case class RemoteFile()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractBinaryDataServiceCaller
+  with IMiscService {
   
   val serviceLabel = "ResourceService"
   val serviceVersion = "1.0"
@@ -27,7 +30,7 @@ object RemoteFile extends AbstractBinaryDataServiceCaller with IMiscService {
     remoteFilePath: String,
     localFilePath: String,
     serverNodeId: String
-  )(implicit callerCtx: IServiceCallerContext, ec: ExecutionContext): JMSServiceCall[File] = {
+  )(implicit ec: ExecutionContext): JMSServiceCall[File] = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()

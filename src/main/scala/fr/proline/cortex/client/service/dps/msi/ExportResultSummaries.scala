@@ -12,20 +12,22 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 import fr.proline.cortex.client.service.misc.RemoteFile
 import fr.proline.jms.util.JMSConstants
 
-trait IExportResultSummariesServiceCaller {
+trait IExportResultSummariesServiceCaller extends IServiceCaller {
   def export(
     rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
     fileFormat: ExportFileFormat.Value,
     fileDirectory: String,
     fileName: String,
     extraParams: Option[Map[String, Any]] = None
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Array[String]]
+  ): IServiceCall[Array[String]]
 }
 
-object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller
+case class ExportResultSummaries()(implicit val callerCtx: JMSServiceCallerContext)
+    extends AbstractJSONRPC2ServiceCaller
     with IExportResultSummariesServiceV2_0
     with IExportResultSummariesServiceCaller {
   
@@ -39,7 +41,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller
     fileDirectory: String,
     fileName: String,
     extraParams: Option[Map[String, Any]] = None
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Array[String]] = {
+  ): JMSServiceCall[Array[String]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
@@ -71,7 +73,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller
     fileFormat: ExportFileFormat.Value,
     extraParams: Option[Map[String, Any]],
     localFileDirectory: String
-  )(implicit callerCtx: IServiceCallerContext, ec: ExecutionContext): JMSServiceCall[List[File]] = {
+  )(implicit ec: ExecutionContext): JMSServiceCall[List[File]] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(RSM_IDENTIFIERS_PARAM, rsmIdentifiers)
@@ -88,7 +90,7 @@ object ExportResultSummaries extends AbstractJSONRPC2ServiceCaller
       val futureFiles = filePaths.map { filePath =>
         val localFilePath = localFileDirectory + '/' + new File(filePath).getName
         
-        RemoteFile.download(filePath, localFilePath, prolineNodeId).result
+        RemoteFile().download(filePath, localFilePath, prolineNodeId).result
         //RemoteResource.downloadToFile(filePath, localFilePath, prolineNodeId)
       }
       

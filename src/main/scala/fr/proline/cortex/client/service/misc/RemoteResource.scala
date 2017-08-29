@@ -15,11 +15,14 @@ import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.service.misc._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 import fr.proline.jms.util.JMSConstants
 
 import rx.lang.scala.Observable
 
-object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService {
+case class RemoteResource()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractByteStreamServiceCaller
+  with IMiscService {
   
   val serviceLabel = "ResourceService"
   val serviceVersion = "1.0"
@@ -28,7 +31,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
   def getBytes(
     remoteFilePath: String,
     serverNodeId: String
-  )(implicit callerCtx: IServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
+  ): (Future[Message],Observable[ByteBuffer]) = {
     
     // TODO: create the corresponding PARAM API
     val namedParams = new HashMap[String,Any]()
@@ -46,7 +49,7 @@ object RemoteResource extends AbstractByteStreamServiceCaller with IMiscService 
     remoteFilePath: String,
     localFilePath: String,
     serverNodeId: String
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[File] = {
+  ): JMSServiceCall[File] = {
     
     val file = new File(localFilePath)
     

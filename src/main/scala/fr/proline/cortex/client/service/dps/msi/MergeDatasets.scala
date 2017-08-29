@@ -7,22 +7,24 @@ import fr.profi.util.serialization.ProfiJson
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IMergeDatasetsServiceCaller {
+trait IMergeDatasetsServiceCaller extends IServiceCaller {
   def mergeResultSets(
     projectId: Long,
     resultSetIds: Seq[Long],
     additionMode: Option[String]
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
+  ): IServiceCall[Long]
   
   def mergeResultSummaries(
     projectId: Long,
     resultSummaryIds: Seq[Long],
     additionMode: Option[String]
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[MergeResultSetsServiceV2_0.RSMMergeResult]
+  ): IServiceCall[MergeResultSetsServiceV2_0.RSMMergeResult]
 }
 
-object MergeDatasets extends AbstractJSONRPC2ServiceCaller
+case class MergeDatasets()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractJSONRPC2ServiceCaller
   with IMergeResultSetsServiceV2_0
   with IMergeDatasetsServiceCaller {
   
@@ -30,7 +32,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller
     projectId: Long,
     resultSetIds: Seq[Long],
     additionMode: Option[String] // TODO: move AdditionMode enum from OMP to OM
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
+  ): JMSServiceCall[Long] = {
     
     import MERGE_RESULT_SETS_METHOD._
     
@@ -46,7 +48,7 @@ object MergeDatasets extends AbstractJSONRPC2ServiceCaller
     projectId: Long,
     resultSummaryIds: Seq[Long],
     additionMode: Option[String] // TODO: move AdditionMode enum from OMP to OM
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[MergeResultSetsServiceV2_0.RSMMergeResult] = {
+  ): JMSServiceCall[MergeResultSetsServiceV2_0.RSMMergeResult] = {
     
     import MERGE_RESULT_SUMMARIES_METHOD._
     

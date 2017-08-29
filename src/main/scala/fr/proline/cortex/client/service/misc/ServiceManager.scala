@@ -6,11 +6,20 @@ import fr.profi.util.primitives._
 import fr.proline.cortex.api.service.misc.ICancelService
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
+
+trait IServiceManagerServiceCaller {
+  def cancelService(jmsMessageId: String): IServiceCall[Boolean]
+}
 
 // Note: we intentionally renamed CancelService into ServiceManager
-object ServiceManager extends AbstractJSONRPC2ServiceCaller with ICancelService {
+// TODO: change the name accordingly in Cortex
+case class ServiceManager()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractJSONRPC2ServiceCaller
+  with ICancelService
+  with IServiceManagerServiceCaller {
   
-  def cancelService(jmsMessageId: String)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def cancelService(jmsMessageId: String): JMSServiceCall[Boolean] = {
     val namedParams = new HashMap[String,Any]()
     namedParams.put(CANCEL_METHOD.MESSAGE_ID_PARAM, jmsMessageId)
     

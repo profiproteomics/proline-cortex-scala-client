@@ -7,6 +7,7 @@ import fr.proline.core.om.model.msq.SimplifiedExperimentalDesign
 import fr.proline.cortex.api.service.dps.msq._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
 case class QuantifySCConfig(
   name: String,
@@ -32,21 +33,24 @@ case class QuantifySCConfig(
   }
 }
 
-trait IQuantifySCServiceCaller {
+trait IQuantifySCServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     config: QuantifySCConfig
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Map[String,Any]]
+  ): IServiceCall[Map[String,Any]]
 }
 
-object QuantifySC extends AbstractRemoteProcessingServiceCaller[Map[String,Any]] with IQuantifySCService {
+case class QuantifySC()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Map[String,Any]]
+  with IQuantifySCService
+  with IQuantifySCServiceCaller {
   
   import this.PROCESS_METHOD._
   
   def apply(
     projectId: Long,
     config: QuantifySCConfig
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Map[String,Any]] = {
+  ): JMSServiceCall[Map[String,Any]] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

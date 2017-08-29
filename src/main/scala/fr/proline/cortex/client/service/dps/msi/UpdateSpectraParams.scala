@@ -6,16 +6,18 @@ import fr.profi.util.primitives.toInt
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IUpdateSpectraParamsServiceCaller {
+trait IUpdateSpectraParamsServiceCaller extends IServiceCaller {
   def apply(
     projectId: Long,
     resultSetIds: Seq[Long],
     peaklistSoftwareId: Long
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Int]
+  ): IServiceCall[Int]
 }
 
-object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int]
+case class UpdateSpectraParams()(implicit val callerCtx: JMSServiceCallerContext)
+    extends AbstractRemoteProcessingServiceCaller[Int]
     with IUpdateSpectraParamsServiceV2_0
     with IUpdateSpectraParamsServiceCaller {
   
@@ -25,7 +27,7 @@ object UpdateSpectraParams extends AbstractRemoteProcessingServiceCaller[Int]
     projectId: Long,
     resultSetIds: Seq[Long],
     peaklistSoftwareId: Long
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Int] = {
+  ): JMSServiceCall[Int] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

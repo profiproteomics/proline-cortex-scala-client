@@ -7,18 +7,20 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.uds._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IGetExportInformationServiceCaller {
-  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]])(implicit callerCtx: IServiceCallerContext): IServiceCall[String]
+trait IGetExportInformationServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]]): IServiceCall[String]
 }
 
-object GetExportInformation extends AbstractRemoteProcessingServiceCaller[String]
+case class GetExportInformation()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[String]
   with IGetExportInformationService
   with IGetExportInformationServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[String] = {
+  def apply(projectId: Long, datasetId: Long, extraParams: Option[Map[String, Any]]): JMSServiceCall[String] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)

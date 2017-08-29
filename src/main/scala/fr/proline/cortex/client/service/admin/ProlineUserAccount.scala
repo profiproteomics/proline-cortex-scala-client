@@ -8,18 +8,19 @@ import fr.profi.util.primitives._
 import fr.proline.cortex.api.service.admin.IUserAccountService
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IProlineUserAccountServiceCaller {
-  def create(login: String, passwordHash: String, isAdmin: Boolean)(implicit callerCtx: IServiceCallerContext): IServiceCall[Long]
-  def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String)(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
-  def changeAdminStatus(userId: Long, isAdmin: Boolean)(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+trait IProlineUserAccountServiceCaller extends IServiceCaller {
+  def create(login: String, passwordHash: String, isAdmin: Boolean): IServiceCall[Long]
+  def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String): IServiceCall[Boolean]
+  def changeAdminStatus(userId: Long, isAdmin: Boolean): IServiceCall[Boolean]
   def authenticate(
     login: String,
     passwordHash: String
-  )(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+  ): IServiceCall[Boolean]
 }
 
-object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller
+case class ProlineUserAccount()(implicit val callerCtx: JMSServiceCallerContext) extends AbstractJSONRPC2ServiceCaller
     with IUserAccountService
     with IProlineUserAccountServiceCaller {
   
@@ -27,7 +28,7 @@ object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller
     login: String,
     passwordHash: String,
     isAdmin: Boolean = false
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Long] = {
+  ): JMSServiceCall[Long] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(CREATE_METHOD.LOGIN_PARAM, login)
@@ -37,7 +38,7 @@ object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller
     this.executeRemoteMethod(CREATE_METHOD.name, Some(namedParams), None, toLong )
   }
   
-  def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def changePassword(login: String, oldPasswordHash: String, newPasswordHash: String): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(CHANGE_PASSWORD_METHOD.LOGIN_PARAM, login)
@@ -48,7 +49,7 @@ object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller
   }
   
   // FIXME: this is a severe security failure => it should not be exposed as a service
-  def changeAdminStatus(userId: Long, isAdmin: Boolean)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def changeAdminStatus(userId: Long, isAdmin: Boolean): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(MODIFY_USER_GROUP_METHOD.LOGIN_ID_PARAM, userId)
@@ -60,7 +61,7 @@ object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller
   def authenticate(
     login: String,
     passwordHash: String
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  ): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(AUTHENTICATE_METHOD.LOGIN_PARAM, login)
@@ -75,7 +76,7 @@ object ProlineUserAccount extends AbstractJSONRPC2ServiceCaller
     login: String,
     passwordHash: String,
     publicKey: String
-  )(implicit callerCtx: IServiceCallerContext): JMSServiceCall[String] = {
+  ): JMSServiceCall[String] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(AUTHENTICATE_METHOD.LOGIN_PARAM, login)

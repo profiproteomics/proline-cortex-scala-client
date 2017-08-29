@@ -58,7 +58,7 @@ object BuildJMSServiceCallerContext extends StrictLogging {
   
 }
 
-object JMSServiceCallerContext {
+/*object JMSServiceCallerContext {
   implicit def callerCtx2jmsCallerCtx(callerCtx: IServiceCallerContext): JMSServiceCallerContext = {
     require(
       callerCtx.isInstanceOf[JMSServiceCallerContext],
@@ -66,7 +66,7 @@ object JMSServiceCallerContext {
     )
     callerCtx.asInstanceOf[JMSServiceCallerContext]
   }
-}
+}*/
 
 case class JMSServiceCallerContext private[context](
   val clientName: Option[String],

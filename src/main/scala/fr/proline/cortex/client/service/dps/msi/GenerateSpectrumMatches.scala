@@ -6,6 +6,7 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
 case class GenerateSpectrumMatchesConfig(
   resultSetId: Long,
@@ -26,17 +27,18 @@ case class GenerateSpectrumMatchesConfig(
   }
 }
 
-trait IGenerateSpectrumMatchesServiceCaller {
-  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+trait IGenerateSpectrumMatchesServiceCaller extends IServiceCaller {
+  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig): IServiceCall[Boolean]
 }
 
-object GenerateSpectrumMatches extends AbstractRemoteProcessingServiceCaller[Boolean]
+case class GenerateSpectrumMatches()(implicit val callerCtx: JMSServiceCallerContext)
+    extends AbstractRemoteProcessingServiceCaller[Boolean]
     with IGenerateSpectrumMatchesService
     with IGenerateSpectrumMatchesServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig)(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def apply(projectId: Long, config: GenerateSpectrumMatchesConfig): JMSServiceCall[Boolean] = {
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

@@ -6,18 +6,21 @@ import fr.profi.util.primitives.toBoolean
 import fr.proline.cortex.api.service.dps.msi._
 import fr.proline.cortex.caller._
 import fr.proline.cortex.client._
+import fr.proline.cortex.client.context._
 
-trait IDeleteOrphanDataServiceCaller {
-  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long])(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
-  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long])(implicit callerCtx: IServiceCallerContext): IServiceCall[Boolean]
+trait IDeleteOrphanDataServiceCaller extends IServiceCaller {
+  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long]): IServiceCall[Boolean]
+  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long]): IServiceCall[Boolean]
 }
 
-object DeleteOrphanData extends AbstractRemoteProcessingServiceCaller[Boolean]
-  with IDeleteOrphanDataService with IDeleteOrphanDataServiceCaller {
+case class DeleteOrphanData()(implicit val callerCtx: JMSServiceCallerContext)
+  extends AbstractRemoteProcessingServiceCaller[Boolean]
+  with IDeleteOrphanDataService
+  with IDeleteOrphanDataServiceCaller {
   
   import this.PROCESS_METHOD._
   
-  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def deleteResultSets(projectId: Long, resultSetIds: Seq[Long]): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
@@ -26,7 +29,7 @@ object DeleteOrphanData extends AbstractRemoteProcessingServiceCaller[Boolean]
     this.runService( Some(namedParams) )
   }
   
-  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long])(implicit callerCtx: IServiceCallerContext): JMSServiceCall[Boolean] = {
+  def deleteResultSummaries(projectId: Long, resultSummaryIds: Seq[Long]): JMSServiceCall[Boolean] = {
     
     val namedParams = new HashMap[String,Any]()
     namedParams.put(PROJECT_ID_PARAM, projectId)
