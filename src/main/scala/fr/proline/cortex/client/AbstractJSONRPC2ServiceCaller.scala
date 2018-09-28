@@ -3,11 +3,11 @@ package fr.proline.cortex.client
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 
+import javax.jms.JMSException
 import javax.jms.Message
 import javax.jms.TextMessage
 
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.HashMap
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
@@ -26,6 +26,7 @@ import fr.proline.cortex.client.context._
 
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscriber
+
 
 private[this] object AbstractJSONRPC2ServiceCaller {
   
@@ -109,7 +110,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
    */
   def executeRemoteMethod[T](
     methodName: String,
-    namedParams: Option[HashMap[String,Any]],
+    namedParams: Option[scala.collection.Map[String,Any]],
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean = false
@@ -134,7 +135,7 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
    */
   protected def observeRemoteMethodResult[T](
     methodName: String,
-    namedParams: Option[HashMap[String,Any]],
+    namedParams: Option[scala.collection.Map[String,Any]],
     annotateRequest: Option[TextMessage => Unit],
     convertResponseResult: AnyRef => T,
     synchronous: Boolean
@@ -149,7 +150,27 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
       params = namedParams.orNull
     )
     
-    val textMessage = jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
+    val textMessage = try {
+      jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
+    } catch {
+      case jmsError @ (_: JMSException | _: javax.jms.IllegalStateException | _: javax.jms.IllegalStateRuntimeException) => {
+        try {
+          jmsCallerCtx.reconnect()
+          
+          val txtMsg = jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
+          
+          logger.warn("Successfully recovered from JMS error: "+ jmsError.getMessage)
+          
+          txtMsg
+        } catch {
+          case t: Throwable => {
+            logger.error("An error happened while trying to reconnect to JMS server",t)
+            throw new Exception("JMS connection failed, and reconnection is not possible", jmsError)
+          }
+        }
+      }
+    }
+    
     if (annotateRequest.isDefined) annotateRequest.get.apply(textMessage)
     
     val (futureRequest, observableResult) = this.callRemoteService(textMessage, synchronous)

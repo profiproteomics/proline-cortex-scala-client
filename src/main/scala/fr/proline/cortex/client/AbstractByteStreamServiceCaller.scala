@@ -32,7 +32,7 @@ abstract class AbstractByteStreamServiceCaller extends AbstractJSONRPC2ServiceCa
   )(implicit jmsCallerCtx: JMSServiceCallerContext): (Future[Message],Observable[ByteBuffer]) = {
     
     val newJmsContext = jmsCallerCtx.jmsContext.createContext(jmsCallerCtx.jmsContext.getSessionMode)
-    val localCallerContext = BuildJMSServiceCallerContext()(newJmsContext)
+    val localCallerContext = BuildJMSServiceCallerContext(jmsCallerCtx.clientName, jmsCallerCtx.connectionConfig)(newJmsContext)
     
     val (futureRequest, observableConvertedResult) = super.observeRemoteMethodResult[ByteBuffer](
       methodName,

@@ -34,15 +34,16 @@ object BuildJMSContext extends StrictLogging {
     val connFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration)
     connFactory.setConsumerWindowSize(config.consumerWindowSize)
     connFactory.setReconnectAttempts(config.reconnectAttempts)
+    // TODO: uncomment me when these parameters are effectively used
+    //connFactory.setRetryInterval(config.retryInterval)
+    //connFactory.setRetryIntervalMultiplier(config.retryIntervalMultiplier)
   
     val jmsContext = try {
       // Create a JMS v2.0 Context
       connFactory.createContext(Session.AUTO_ACKNOWLEDGE)
     } catch {
       case newConnError: Exception => {
-        val errorMsg = "JMS connection creation failed !"
-        logger.error(errorMsg)
-        throw new Exception(errorMsg, newConnError )
+        throw new Exception("JMS connection creation failed!", newConnError)
       }
     }
     
@@ -52,24 +53,4 @@ object BuildJMSContext extends StrictLogging {
     jmsContext
   }
   
-  /*def close() = synchronized {
-
-    if (_isConnected) {
-      try {
-        jmsContext.close()
-
-        logger.info("JMS connection successfully closed !")
-      } catch {
-        case closeConnError: Exception => {
-          logger.error("Error closing JMS Connection !")
-          throw closeConnError
-        }
-      }
-      finally {
-        _isConnected = false
-      }
-    }
-
-  }*/
-
 }
