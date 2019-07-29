@@ -12,6 +12,7 @@ case class GenerateSpectrumMatchesConfig(
   resultSetId: Long,
   resultSummaryId: Option[Long],
   peptideMatchIds: Option[Array[Long]],
+  fragmentationRuleSetId: Option[Long],
   forceInsert: Option[Boolean] = None
 ) extends INamedParamsBuilder {
   
@@ -21,6 +22,7 @@ case class GenerateSpectrumMatchesConfig(
     namedParams.put(RESULT_SET_ID_PARAM, resultSetId)
     if (resultSummaryId.isDefined) namedParams.put(RESULT_SUMMARY_ID_PARAM, resultSummaryId.get)
     if (peptideMatchIds.isDefined) namedParams.put(PEPTIDE_MATCH_IDS_PARAM, peptideMatchIds.get)
+    if (fragmentationRuleSetId.isDefined) namedParams.put(FRAGMENTATION_RULE_SET_ID_PARAM, fragmentationRuleSetId.get)
     if (forceInsert.isDefined) namedParams.put(FORCE_INSERT_PARAM, forceInsert.get)
     
     namedParams
