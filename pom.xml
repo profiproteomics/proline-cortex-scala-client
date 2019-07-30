@@ -9,7 +9,7 @@
   </parent>
   
   <artifactId>Proline-Cortex-ScalaClient</artifactId>
-  <version>0.4.1-SNAPSHOT</version>
+  <version>0.4.1</version>
   
   <name>Proline-Cortex-ScalaClient</name>
   <description>Proline Cortex Scala Client</description>
