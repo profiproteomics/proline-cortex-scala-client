@@ -41,7 +41,7 @@ trait IQuantifyServiceCaller extends IServiceCaller {
 
 case class Quantify()(implicit val callerCtx: JMSServiceCallerContext)
   extends AbstractRemoteProcessingServiceCaller[Long]
-  with IQuantifyService
+  with IQuantifyServiceV3
   with IQuantifyServiceCaller {
   
   import this.PROCESS_METHOD._
