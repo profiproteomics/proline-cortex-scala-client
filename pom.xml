@@ -26,6 +26,35 @@
   
   <dependencies>
   
+    <!-- TEMP addition (should be removed when the ConfigurablePostgresDatabaseConnector is in core -->
+    <!-- HikariCP Pool -->
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>2.5.1</version> <!-- TODO: inherit from ProFI-Pom ? -->
+    </dependency>
+    
+    <!-- C3p0 Pool for Hibernate (runtime scope) -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-c3p0</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Explicit c3p0 latest version to use mchange-commons-java compatible with SLF4J -->
+    <dependency>
+      <groupId>com.mchange</groupId>
+      <artifactId>c3p0</artifactId>
+      <!-- Version inherited from ProFI-Pom -->
+    </dependency>
+    
+    <!-- Databases (Compile-scope to use Drivers DataSource) -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+    <!-- End of TEMP addition -->
+  
     <!-- Scala -->
     <dependency>
       <groupId>org.scala-lang</groupId>
