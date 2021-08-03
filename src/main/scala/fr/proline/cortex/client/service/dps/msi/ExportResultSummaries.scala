@@ -22,8 +22,17 @@ trait IExportResultSummariesServiceCaller extends IServiceCaller {
     fileFormat: ExportFileFormat.Value,
     fileDirectory: String,
     fileName: String,
-    extraParams: Option[Map[String, Any]] = None
+    extraParams: Option[Map[String, Any]]
   ): IServiceCall[Array[String]]
+  
+  def export(
+    rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
+    fileFormat: ExportFileFormat.Value,
+    fileDirectory: String,
+    fileName: String
+  ): IServiceCall[Array[String]] = {
+    this.export(rsmIdentifiers, fileFormat, fileDirectory, fileName, None)
+  }
 }
 
 case class ExportResultSummaries()(implicit val callerCtx: JMSServiceCallerContext)
@@ -40,7 +49,7 @@ case class ExportResultSummaries()(implicit val callerCtx: JMSServiceCallerConte
     fileFormat: ExportFileFormat.Value,
     fileDirectory: String,
     fileName: String,
-    extraParams: Option[Map[String, Any]] = None
+    extraParams: Option[Map[String, Any]]
   ): JMSServiceCall[Array[String]] = {
     
     val namedParams = new HashMap[String,Any]()
