@@ -72,7 +72,9 @@ case class ValidateResultSet()(implicit val callerCtx: JMSServiceCallerContext)
   }
   
   protected def convertResponseResult(responseResult: AnyRef): Map[Long, Long] = {
-    ProfiJson.getObjectMapper().convertValue(responseResult, classOf[Map[Long, Long]])
+    ProfiJson.getObjectMapper().convertValue(responseResult, classOf[Map[java.lang.String, Long]]).map { kv =>
+      (kv._1.toLong, kv._2)
+    }
   }
   
 }
