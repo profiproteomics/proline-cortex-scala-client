@@ -27,7 +27,7 @@ object RemoteServiceMonitor {
     _remoteServiceMonitor
   }
   
-  def close() {
+  def close(): Unit = {
     if (_remoteServiceMonitor != null) {
       _remoteServiceMonitor.close()
     }
@@ -83,7 +83,7 @@ private [this] class ServiceNotificationListener(
   var callback: Option[(JMSNotificationMessage) => Unit] = None
 ) extends MessageListener with StrictLogging {
 
-  override def onMessage(jmsMessage: Message) {
+  override def onMessage(jmsMessage: Message): Unit = {
     logger.debug(s"Notification Listener receiving message ${jmsMessage.getJMSMessageID }")
     logger.debug(s"Content of message ${jmsMessage.getJMSMessageID} is:" + JMSUtils.formatJmsMessage(jmsMessage) )
 

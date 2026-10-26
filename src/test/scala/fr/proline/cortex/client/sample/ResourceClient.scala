@@ -46,7 +46,7 @@ object ResourceClient extends StrictLogging {
   /**
    * @param args
    */
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     
     val jmsConnConfig = JMSConnectionConfig()
     var connection: Connection = null
@@ -142,7 +142,7 @@ object ResourceClient extends StrictLogging {
 
   private object ResourceMessageListener extends MessageListener {
 
-    def onMessage(jmsMessage: Message) {
+    def onMessage(jmsMessage: Message): Unit = {
 
       System.out.println("Receiving message n° "
         + BasicMessageListener.MESSAGE_COUNT_SEQUENCE.incrementAndGet() + " : "

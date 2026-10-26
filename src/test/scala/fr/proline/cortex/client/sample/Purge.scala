@@ -38,7 +38,7 @@ object Purge extends StrictLogging {
 
   private val PURGE_BEFORE = TimeUnit.HOURS.toMillis(1) // 1 hour
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     
     val jmsConnConfig = JMSConnectionConfig()
     var connection: Connection = null

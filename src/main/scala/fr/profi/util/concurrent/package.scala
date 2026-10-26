@@ -14,7 +14,7 @@ package object concurrent {
   object ObservableUtils {
     // TODO: rename to subscribe result to future
     def observableToFuture[T](observable: Observable[T]): Future[T] = {
-      val promise = Promise[T]
+      val promise = Promise[T]()
   
       observable.single.subscribe(
         onNext = { result: T => 

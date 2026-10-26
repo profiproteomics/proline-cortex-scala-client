@@ -28,7 +28,7 @@ abstract class AbstractBinaryDataServiceCaller extends AbstractJSONRPC2ServiceCa
   )(implicit jmsCallerCtx: JMSServiceCallerContext): JMSServiceCall[BytesMessage] = {
     
     val newJmsContext = jmsCallerCtx.jmsContext.createContext(jmsCallerCtx.jmsContext.getSessionMode)
-    val localCallerContext = BuildJMSServiceCallerContext(jmsCallerCtx.clientName, jmsCallerCtx.connectionConfig)(newJmsContext)
+    val localCallerContext = BuildJMSServiceCallerContext(jmsCallerCtx.clientName, jmsCallerCtx.connectionConfig, jmsCallerCtx.profile)(newJmsContext)
     
     val (futureRequest, observableConvertedResult) = super.observeRemoteMethodResult[BytesMessage](
       methodName,

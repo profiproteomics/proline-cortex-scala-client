@@ -151,13 +151,13 @@ abstract class AbstractJSONRPC2ServiceCaller extends AbstractRemoteServiceCaller
     )
     
     val textMessage = try {
-      jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
+      jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString())
     } catch {
       case jmsError @ (_: JMSException | _: javax.jms.IllegalStateException | _: javax.jms.IllegalStateRuntimeException) => {
         try {
           jmsCallerCtx.reconnect()
           
-          val txtMsg = jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString)
+          val txtMsg = jmsCallerCtx.jmsContext.createTextMessage(jsonRpcRequest.toJSONString())
           
           logger.warn("Successfully recovered from JMS error: "+ jmsError.getMessage)
           

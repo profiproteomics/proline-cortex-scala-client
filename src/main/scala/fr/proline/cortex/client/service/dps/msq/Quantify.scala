@@ -41,15 +41,37 @@ trait IQuantifyServiceCaller extends IServiceCaller {
 
 case class Quantify()(implicit val callerCtx: JMSServiceCallerContext)
   extends AbstractRemoteProcessingServiceCaller[Long]
-  with IQuantifyServiceV3
+  with IQuantifyService
   with IQuantifyServiceCaller {
   
   import this.PROCESS_METHOD._
+  
+  // The version of the Quantify service depends on the Cortex profile (see CortexProfile.quantifyServiceVersion)
+  override val serviceVersion: String = callerCtx.profile.quantifyServiceVersion
+  override val isDefaultVersion: Boolean = false
   
   def apply(
     projectId: Long,
     config: QuantifyConfig
   ): JMSServiceCall[Long] = {
+    
+    // The version of the LabelFreeQuantConfig depends on the version of the Quantify service called with the Cortex profile
+    config.quantitationConfig match {
+      case _: fr.proline.core.algo.msq.config.LabelFreeQuantConfig =>
+        require(
+          callerCtx.profile.labelFreeQuantConfigVersion == "3.0",
+          s"the LabelFreeQuantConfig of proline-core (version 3.0) can't be used with the Cortex profile '${callerCtx.profile.name}' " +
+          s"(Quantify service ${callerCtx.profile.quantifyServiceVersion}): " +
+          "use fr.proline.cortex.client.compat.v2_1.config.LabelFreeQuantConfig (version 2.0) instead"
+        )
+      case _: fr.proline.cortex.client.compat.v2_1.config.LabelFreeQuantConfig =>
+        require(
+          callerCtx.profile.labelFreeQuantConfigVersion == "2.0",
+          s"the LabelFreeQuantConfig of the package compat.v2_1 (version 2.0) can't be used with the Cortex profile '${callerCtx.profile.name}' " +
+          s"(Quantify service ${callerCtx.profile.quantifyServiceVersion}): use the LabelFreeQuantConfig of proline-core (version 3.0) instead"
+        )
+      case _ => // other configurations are the same for all the profiles
+    }
     
     val namedParams = config.putInNamedParamMap( new HashMap[String,Any]() )
     namedParams.put(PROJECT_ID_PARAM, projectId)

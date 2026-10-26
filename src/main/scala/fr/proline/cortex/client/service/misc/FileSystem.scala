@@ -40,7 +40,7 @@ case class FileSystem()(implicit val callerCtx: JMSServiceCallerContext)
       case javaArrayList: java.util.ArrayList[_] => {
         require( javaArrayList.isEmpty() == false, mkServiceErrorMsg("the returned List is empty !") )
         
-        ProfiJson.getObjectMapper.convertValue(javaArrayList,classOf[Array[String]])
+        ProfiJson.getObjectMapper().convertValue(javaArrayList,classOf[Array[String]])
       }
       case _ => throw new Exception( mkServiceErrorMsg("invalid result, list of parameters expected !") )
     }
@@ -73,7 +73,7 @@ case class FileSystem()(implicit val callerCtx: JMSServiceCallerContext)
       case javaArrayList: java.util.ArrayList[_] => {
         require( javaArrayList.isEmpty() == false, mkServiceErrorMsg("the returned list is empty !") )
         
-        ProfiJson.getObjectMapper.convertValue(javaArrayList,classOf[Array[MountPoint]])
+        ProfiJson.getObjectMapper().convertValue(javaArrayList,classOf[Array[MountPoint]])
       }
       case _ => throw new Exception( mkServiceErrorMsg("invalid result, list of parameters expected !") )
     }
@@ -104,7 +104,7 @@ case class FileSystem()(implicit val callerCtx: JMSServiceCallerContext)
 
     responseResult match {
       case javaArrayList: java.util.ArrayList[_] => {
-        ProfiJson.getObjectMapper.convertValue(javaArrayList,classOf[Array[FileAttrs]])
+        ProfiJson.getObjectMapper().convertValue(javaArrayList,classOf[Array[FileAttrs]])
       }
       case _ => throw new Exception( mkServiceErrorMsg("invalid result, list of parameters expected !") )
     }

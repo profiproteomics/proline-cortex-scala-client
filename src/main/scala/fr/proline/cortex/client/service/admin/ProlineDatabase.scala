@@ -38,7 +38,7 @@ case class ProlineDatabase()(implicit val callerCtx: JMSServiceCallerContext) ex
       case javaMap: java.util.Map[_, _] => {
         require( javaMap.isEmpty() == false, mkServiceErrorMsg("the returned Map is empty !") )
         
-        val scalaMap = ProfiJson.getObjectMapper.convertValue(javaMap,classOf[Map[String, Object]])
+        val scalaMap = ProfiJson.getObjectMapper().convertValue(javaMap,classOf[Map[String, Object]])
         
         for (requiredKey <- requiredKeys) {
           val valueOpt = scalaMap.get(requiredKey)

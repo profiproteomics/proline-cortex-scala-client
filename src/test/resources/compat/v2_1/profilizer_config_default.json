@@ -1,0 +1,36 @@
+{
+  "discard_missed_cleaved_peptides" : true,
+  "miss_cleaved_peptide_filtering_method" : "DISCARD_ALL_FORMS",
+  "discard_oxidized_peptides" : true,
+  "oxidized_peptide_filtering_method" : "DISCARD_ALL_FORMS",
+  "use_only_specific_peptides" : true,
+  "discard_peptides_sharing_peakels" : true,
+  "apply_profile_clustering" : true,
+  "profile_clustering_method" : "QUANT_PROFILE",
+  "abundance_summarizer_method" : "MEAN",
+  "peptide_stat_config" : {
+    "stat_tests_alpha" : 0.01,
+    "min_zscore" : 0.4,
+    "min_psm_count_per_ratio" : 0,
+    "apply_normalization" : true,
+    "apply_miss_val_inference" : true,
+    "miss_val_inference_method" : "GAUSSIAN_MODEL",
+    "miss_val_inference_config" : { },
+    "apply_variance_correction" : true,
+    "apply_ttest" : true,
+    "apply_ztest" : true
+  },
+  "protein_stat_config" : {
+    "stat_tests_alpha" : 0.01,
+    "min_zscore" : 0.4,
+    "min_psm_count_per_ratio" : 0,
+    "apply_normalization" : true,
+    "apply_miss_val_inference" : true,
+    "miss_val_inference_method" : "GAUSSIAN_MODEL",
+    "miss_val_inference_config" : { },
+    "apply_variance_correction" : true,
+    "apply_ttest" : true,
+    "apply_ztest" : true
+  },
+  "summarizing_based_on" : "QUANT_PEPTIDES"
+}

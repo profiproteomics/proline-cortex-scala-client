@@ -62,7 +62,7 @@ case class RemoteResource()(implicit val callerCtx: JMSServiceCallerContext)
 
     val observableFile = Observable[File] { suscriber =>
       
-      bytesMessageResult.doAfterTerminate { () =>
+      bytesMessageResult.doAfterTerminate {
         seekableByteChannel.close()
       }.subscribe(
         onNext = { byteBuffer: ByteBuffer => 

@@ -30,7 +30,7 @@ object QueueMonitor extends StrictLogging {
   val jmsConnConfig = JMSConnectionConfig()
   val NettyConnectorFactoryClassName = classOf[NettyConnectorFactory].getName()
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     var jmsContext: JMSContext = null
 
     try {

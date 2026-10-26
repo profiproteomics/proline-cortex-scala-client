@@ -22,7 +22,7 @@ object MonitoringTopicSubscriberExample extends StrictLogging {
   /**
    * @param args
    */
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
 
     val jmsConnConfig = JMSConnectionConfig()
     var connection: Connection = null

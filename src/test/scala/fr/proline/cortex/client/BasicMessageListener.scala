@@ -7,7 +7,7 @@ import javax.jms.Message
 import javax.jms.MessageListener
 import javax.jms.TextMessage
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.thetransactioncompany.jsonrpc2._
 import com.typesafe.scalalogging.StrictLogging
@@ -21,7 +21,7 @@ object BasicMessageListener extends MessageListener with StrictLogging {
 
 
 
-  def onMessage(jmsMessage: Message) {
+  def onMessage(jmsMessage: Message): Unit = {
     logger.info("Receiving message #" + MESSAGE_COUNT_SEQUENCE.incrementAndGet() + ": " + JMSUtils.formatJmsMessage(jmsMessage))
 
     jmsMessage match {
@@ -40,7 +40,7 @@ object BasicMessageListener extends MessageListener with StrictLogging {
 
   }
 
-  def traceJSONResponse(jsonString: String) {
+  def traceJSONResponse(jsonString: String): Unit = {
     val jsonMessage = JSONRPC2Message.parse(jsonString)
 
     jsonMessage match {

@@ -27,7 +27,7 @@ trait IImportValidateGenerateSMServiceCaller extends IServiceCaller {
 
 case class ImportValidateGenerateSM()(implicit val callerCtx: JMSServiceCallerContext)
   extends AbstractRemoteProcessingServiceCaller[Array[ImportedResultFile]]
-  with IImportValidateGenerateSMService
+  with IImportValidateGenerateSMServiceV1
   with IImportValidateGenerateSMServiceCaller {
   
   import this.PROCESS_METHOD._

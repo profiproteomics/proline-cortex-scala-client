@@ -2,7 +2,6 @@ package fr.proline.cortex.client.service.dps.msi
 
 import java.io.File
 
-import scala.collection.JavaConversions._
 import scala.collection.Map
 import scala.collection.mutable.HashMap
 import scala.concurrent.ExecutionContext
@@ -17,7 +16,7 @@ import fr.proline.cortex.client.service.misc.RemoteFile
 import fr.proline.jms.util.JMSConstants
 
 trait IExportResultSummariesServiceCaller extends IServiceCaller {
-  def export(
+  def `export`(
     rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
     fileFormat: ExportFileFormat.Value,
     fileDirectory: String,
@@ -25,13 +24,13 @@ trait IExportResultSummariesServiceCaller extends IServiceCaller {
     extraParams: Option[Map[String, Any]]
   ): IServiceCall[Array[String]]
   
-  def export(
+  def `export`(
     rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
     fileFormat: ExportFileFormat.Value,
     fileDirectory: String,
     fileName: String
   ): IServiceCall[Array[String]] = {
-    this.export(rsmIdentifiers, fileFormat, fileDirectory, fileName, None)
+    this.`export`(rsmIdentifiers, fileFormat, fileDirectory, fileName, None)
   }
 }
 
@@ -44,7 +43,7 @@ case class ExportResultSummaries()(implicit val callerCtx: JMSServiceCallerConte
   
   private val requiredKeys = Array("file_paths", JMSConstants.PROLINE_NODE_ID_KEY)
   
-  def export(
+  def `export`(
     rsmIdentifiers: Seq[ExportResultSummaryIdentifier],
     fileFormat: ExportFileFormat.Value,
     fileDirectory: String,
@@ -70,7 +69,7 @@ case class ExportResultSummaries()(implicit val callerCtx: JMSServiceCallerConte
       case javaArrayList: java.util.ArrayList[_] => {
         require( javaArrayList.isEmpty() == false, mkServiceErrorMsg("the returned List is empty !") )
         
-        ProfiJson.getObjectMapper.convertValue(javaArrayList,classOf[Array[String]])
+        ProfiJson.getObjectMapper().convertValue(javaArrayList,classOf[Array[String]])
       }
       case _ => throw new Exception( mkServiceErrorMsg("invalid result, list of parameters expected !") )
     }
@@ -116,7 +115,7 @@ case class ExportResultSummaries()(implicit val callerCtx: JMSServiceCallerConte
       case javaMap: java.util.Map[_, _] => {
         require( javaMap.isEmpty() == false, mkServiceErrorMsg("the returned Map is empty !") )
         
-        val scalaMap = ProfiJson.getObjectMapper.convertValue(javaMap,classOf[Map[String, Object]])
+        val scalaMap = ProfiJson.getObjectMapper().convertValue(javaMap,classOf[Map[String, Object]])
         
         for (requiredKey <- requiredKeys) {
           val valueOpt = scalaMap.get(requiredKey)

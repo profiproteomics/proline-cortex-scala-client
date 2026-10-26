@@ -5,7 +5,7 @@
   <parent>
     <groupId>fr.proline</groupId>
     <artifactId>profi-pom</artifactId>
-    <version>0.5.0</version>  <!-- Snapshot Trunk version -->
+    <version>1.4.0-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
   </parent>
   
   <artifactId>proline-cortex-scalaclient</artifactId>
@@ -17,7 +17,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.path>${basedir}/src/main/scala/fr/proline/cortex/client</version.path>
-    <core.version>2.1.0</core.version> <!-- Snapshot Trunk version -->
+    <core.version>2.5.0-SNAPSHOT</core.version> <!-- proline-core (Scala 2.13) -->
+    <commons.version>1.4.0-SNAPSHOT</commons.version> <!-- profi-commons (Scala 2.13) -->
+    <server.version>2.4.0-SNAPSHOT</server.version> <!-- proline-server : proline-cortex-api (Scala 2.13) -->
   </properties>
   
   <scm>
@@ -31,7 +33,7 @@
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>2.5.1</version> <!-- TODO: inherit from ProFI-Pom ? -->
+      <version>5.0.1</version> <!-- same version as proline-databases (proline-core) -->
     </dependency>
     
     <!-- C3p0 Pool for Hibernate (runtime scope) -->
@@ -70,14 +72,14 @@
     </dependency>
     <dependency>
       <groupId>com.typesafe.scala-logging</groupId>
-      <artifactId>scala-logging_${scala.version}</artifactId>
+      <artifactId>scala-logging_${scala.compat.version}</artifactId>
       <!-- Version inherited from ProFI-Pom -->
     </dependency>
     
     <!-- Serialization -->
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-scala_${scala.version}</artifactId>
+      <artifactId>jackson-module-scala_${scala.compat.version}</artifactId>
       <!-- Version inherited from ProFI-Pom -->
     </dependency>
     
@@ -92,7 +94,7 @@
     <dependency>
       <groupId>org.jboss.spec.javax.jms</groupId>
       <artifactId>jboss-jms-api_2.0_spec</artifactId>
-      <version>1.0.1.Final</version>
+      <version>1.0.2.Final</version>
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
@@ -109,24 +111,25 @@
     <dependency>
       <groupId>io.reactivex</groupId>
       <artifactId>rxjava</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.8</version>
     </dependency>
     <dependency>
       <groupId>io.reactivex</groupId>
-      <artifactId>rxscala_${scala.version}</artifactId>
-      <version>0.26.5</version>
+      <artifactId>rxscala_${scala.compat.version}</artifactId>
+      <version>0.27.0</version>
     </dependency>
     
     <!-- Proline -->
     <dependency>
       <groupId>fr.profi.util</groupId>
-      <artifactId>profi-commons-scala_${scala.version}</artifactId>
-      <version>1.0.0-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+      <artifactId>profi-commons-scala</artifactId>
+      <version>${commons.version}</version>
+      <classifier>${scala.compat.version}</classifier>
     </dependency>    
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>proline-cortex-api</artifactId>
-      <version>0.7.0-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+      <version>${server.version}</version>
     </dependency>
     <dependency>
       <groupId>fr.proline</groupId>
@@ -141,8 +144,9 @@
     </dependency>
     <dependency>
       <groupId>fr.proline</groupId>
-      <artifactId>proline-om_${scala.version}</artifactId>
+      <artifactId>proline-om</artifactId>
       <version>${core.version}</version>
+      <classifier>${scala.compat.version}</classifier>
       <exclusions>
         <exclusion>
           <groupId>*</groupId>
@@ -169,7 +173,7 @@
 
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.version}</artifactId>
+      <artifactId>scalatest_${scala.compat.version}</artifactId>
       <!-- Version inherited from ProFI-Pom -->
       <scope>test</scope>
     </dependency>

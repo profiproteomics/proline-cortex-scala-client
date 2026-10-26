@@ -15,6 +15,7 @@ import com.typesafe.scalalogging.StrictLogging
 import fr.proline.cortex.api.CortexConstants
 import fr.proline.cortex.api.JMSConnectionConfig
 import fr.proline.cortex.caller.IServiceCallerContext
+import fr.proline.cortex.client.profile.CortexProfile
 
 import rx.lang.scala.schedulers.ExecutionContextScheduler
 
@@ -23,21 +24,23 @@ object BuildJMSServiceCallerContext extends StrictLogging {
   def apply(
     clientName: Option[String] = None,
     connectionConfig: JMSConnectionConfig,
+    profile: CortexProfile, // mandatory: no default profile on purpose
     queueName: String = CortexConstants.DEFAULT_PROLINE_SERVICE_REQUEST_QUEUE_NAME
   )(implicit managedJmsContext: JMSContext): JMSServiceCallerContext = {
     
-    logger.info(s"Using JMS Queue '$queueName'")
+    logger.info(s"Using JMS Queue '$queueName' with Cortex profile '${profile.name}'")
     
     // Create a single thread executor that will be used for JMS messages processing
     implicit val singleThreadExecutor = Executors.newSingleThreadExecutor
     implicit val execCtx = ExecutionContext.fromExecutor(singleThreadExecutor)
     
-    this.withThreadExecutor(clientName, connectionConfig, queueName)
+    this.withThreadExecutor(clientName, connectionConfig, profile, queueName)
   }
   
   def withThreadExecutor(
     clientName: Option[String] = None,
     connectionConfig: JMSConnectionConfig,
+    profile: CortexProfile,
     queueName: String = CortexConstants.DEFAULT_PROLINE_SERVICE_REQUEST_QUEUE_NAME
   )(
     implicit managedJmsContext: JMSContext,
@@ -60,7 +63,7 @@ object BuildJMSServiceCallerContext extends StrictLogging {
       // Create a JMS Message Producer (Producer MUST be confined in current Thread)
       val jmsProducer = serviceCallerJmsCtx.createProducer()
       
-      val jmsScCtx = new JMSServiceCallerContext(clientName, connectionConfig)
+      val jmsScCtx = new JMSServiceCallerContext(clientName, connectionConfig, profile)
       
       jmsScCtx._init(
         serviceCallerJmsCtx,
@@ -76,7 +79,11 @@ object BuildJMSServiceCallerContext extends StrictLogging {
   
 }
 
-case class JMSServiceCallerContext private[context] (clientName: Option[String], connectionConfig: JMSConnectionConfig)(
+case class JMSServiceCallerContext private[context] (
+  clientName: Option[String],
+  connectionConfig: JMSConnectionConfig,
+  profile: CortexProfile
+)(
   implicit val execCtx: ExecutionContext,
   implicit private val threadExecutor: ExecutorService,
   implicit private val managedJmsContext: JMSContext
@@ -102,12 +109,12 @@ case class JMSServiceCallerContext private[context] (clientName: Option[String],
   
   val execCtxScheduler = ExecutionContextScheduler(execCtx)
 
-  def close() {
+  def close(): Unit = {
     jmsContext.close()
     threadExecutor.shutdown()
   }
   
-  def reconnect() {
+  def reconnect(): Unit = {
     try {
       jmsContext.close()
       managedJmsContext.close()
@@ -119,7 +126,8 @@ case class JMSServiceCallerContext private[context] (clientName: Option[String],
     logger.info("Trying to reconnect to JMS server...")
     val newJmsScCtx = BuildJMSServiceCallerContext.withThreadExecutor(
       clientName,
-      connectionConfig, 
+      connectionConfig,
+      profile,
       jmsQueue.getQueueName
     )(BuildJMSContext(connectionConfig), threadExecutor, execCtx)
     

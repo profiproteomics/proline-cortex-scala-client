@@ -80,7 +80,7 @@ abstract class AbstractRemoteServiceCaller[T] extends IRemoteServiceIdentity wit
       val responseConsumer = callerCtx.jmsContext.createConsumer(temporaryReplyQueue)
       
       val messageListener = new Object with MessageListener {
-        override def onMessage(jmsResponse: Message) {
+        override def onMessage(jmsResponse: Message): Unit = {
           Future {
             val messageNumber = messagesCountSequence.incrementAndGet()
             

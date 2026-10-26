@@ -1,0 +1,16 @@
+{
+  "config_version" : "2.0",
+  "extraction_params" : {
+    "moz_tol" : 10.0,
+    "moz_tol_unit" : "ppm"
+  },
+  "clustering_params" : {
+    "moz_tol" : 10.0,
+    "moz_tol_unit" : "ppm",
+    "time_tol" : 15.0,
+    "intensity_computation" : "MOST_INTENSE",
+    "time_computation" : "MOST_INTENSE"
+  },
+  "detection_method_name" : "EXTRACT_IONS",
+  "use_last_peakel_detection" : false
+}

@@ -77,7 +77,7 @@ object JMSUtils extends LazyLogging {
     buff.toString()
   }
   
-  @inline private def _appendLine(sb: StringBuilder, key: String, value: String) {
+  @inline private def _appendLine(sb: StringBuilder, key: String, value: String): Unit = {
     sb.append(TAB)
       .append(key)
       .append(' ')

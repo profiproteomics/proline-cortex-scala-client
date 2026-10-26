@@ -1,0 +1,69 @@
+{
+  "config_version" : "2.0",
+  "extraction_params" : {
+    "moz_tol" : 5.0,
+    "moz_tol_unit" : "ppm"
+  },
+  "clustering_params" : {
+    "moz_tol" : 5.0,
+    "moz_tol_unit" : "ppm",
+    "time_tol" : 15.0,
+    "intensity_computation" : "MOST_INTENSE",
+    "time_computation" : "MOST_INTENSE"
+  },
+  "alignment_config" : {
+    "method_name" : "ITERATIVE",
+    "method_params" : {
+      "mass_interval" : 20000,
+      "max_iterations" : 3
+    },
+    "smoothing_method_name" : "LANDMARK_RANGE",
+    "smoothing_method_params" : {
+      "window_size" : 200,
+      "window_overlap" : 50,
+      "min_window_landmarks" : 50
+    },
+    "ft_mapping_method_name" : "FEATURE_COORDINATES",
+    "ft_mapping_method_params" : {
+      "moz_tol" : 5.0,
+      "moz_tol_unit" : "ppm",
+      "time_tol" : 600.0
+    },
+    "remove_outliers" : true,
+    "ignore_errors" : false
+  },
+  "cross_assignment_config" : {
+    "method_name" : "BETWEEN_ALL_RUNS",
+    "ft_mapping_params" : {
+      "moz_tol" : 5.0,
+      "moz_tol_unit" : "ppm",
+      "time_tol" : 60.0
+    },
+    "restrain_to_reliable_features" : true,
+    "ft_filter" : {
+      "name" : "intensity",
+      "operator" : "GTE",
+      "value" : 1000.0
+    }
+  },
+  "normalization_method" : "MEDIAN_RATIO",
+  "detection_method_name" : "DETECT_FEATURES",
+  "detection_params" : {
+    "start_from_validated_peptides" : true,
+    "psm_matching_params" : {
+      "moz_tol" : 5.0,
+      "moz_tol_unit" : "ppm"
+    },
+    "ft_mapping_params" : {
+      "moz_tol" : 5.0,
+      "moz_tol_unit" : "ppm",
+      "time_tol" : 120.0
+    },
+    "isotope_matching_params" : {
+      "moz_tol" : 5.0,
+      "moz_tol_unit" : "ppm"
+    }
+  },
+  "use_last_peakel_detection" : true,
+  "pep_ion_summarizing_methdd" : "BEST_ION"
+}
