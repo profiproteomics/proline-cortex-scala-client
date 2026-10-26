@@ -1,0 +1,23 @@
+jdk:
+  - openjdk17
+before_install:
+  - sdk install maven 3.9.9 && sdk use maven 3.9.9
+  - BRANCH_NAME=dev_scala_2.13
+  # profi-commons (the profi-pom parent is not a reactor module: install it first)
+  - git clone --depth 1 --branch $BRANCH_NAME https://github.com/profiproteomics/profi-commons.git $HOME/profi-commons
+  - (cd $HOME/profi-commons && mvn -q -f profi_pom/pom.xml install && mvn -q install -DskipTests)
+  # sgfilter (Clojars) is needed by mzdb-processing
+  - curl -sSfL -o $HOME/sgfilter-1.2.jar https://repo.clojars.org/mr/go/sgfilter/sgfilter/1.2/sgfilter-1.2.jar
+  - mvn -q install:install-file -Dfile=$HOME/sgfilter-1.2.jar -DgroupId=mr.go.sgfilter -DartifactId=sgfilter -Dversion=1.2 -Dpackaging=jar
+  # mzdb (needed by proline-core)
+  - git clone --depth 1 --branch $BRANCH_NAME https://github.com/profiproteomics/mzdb.git $HOME/mzdb
+  - (cd $HOME/mzdb && mvn -q install -DskipTests)
+  # proline-core (proline-om, proline-databases only: no other reactor module is needed by this client);
+  # its POM forces skipTests=false, hence maven.test.skip.exec
+  - git clone --depth 1 --branch $BRANCH_NAME https://github.com/profiproteomics/proline-core.git $HOME/proline-core
+  - (cd $HOME/proline-core && mvn -q install -Dmaven.test.skip.exec=true -pl proline-om,proline-databases -am)
+  # proline-server (proline-cortex-api only)
+  - git clone --depth 1 --branch $BRANCH_NAME https://github.com/profiproteomics/proline-server.git $HOME/proline-server
+  - (cd $HOME/proline-server && mvn -q install -Dmaven.test.skip.exec=true -pl proline-cortex-api -am)
+install:
+  - mvn install -DskipTests
