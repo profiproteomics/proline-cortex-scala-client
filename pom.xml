@@ -21,7 +21,7 @@
   </properties>
   
   <scm>
-    <connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-JMS-Components/Proline-Cortex-ScalaClient/trunk</connection>
+    <connection>scm:git:https://github.com/profiproteomics/proline-cortex-scala-client.git</connection>
   </scm>
   
   <dependencies>
